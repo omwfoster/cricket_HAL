@@ -26,10 +26,7 @@
  *
  */
 
-#include "Adafruit_seesaw.h"
-
-
-
+#include "Adafruit_seesaw.hpp"
 
 /* Buffer used for transmission */
 uint8_t aTxBuffer[] = " ****I2C_TwoBoards communication based on DMA****  ****I2C_TwoBoards communication based on DMA****  ****I2C_TwoBoards communication based on DMA**** ";
@@ -37,13 +34,9 @@ uint8_t aTxBuffer[] = " ****I2C_TwoBoards communication based on DMA****  ****I2
 /* Buffer used for reception */
 uint8_t aRxBuffer[RXBUFFERSIZE];
 
-
-Print::Print(){
-
+Print::Print()
+{
 }
-  
-
-
 
 //#define SEESAW_I2C_DEBUG
 
@@ -53,18 +46,28 @@ Print::Print(){
  *
  *  @param      i2c_bus the I2C bus connected to the seesaw, defaults to "Wire"
  ****************************************************************************************/
-Adafruit_seesaw::Adafruit_seesaw(I2C_HandleTypeDef * hI2c) { // todo: open i2c channel with cla
+Adafruit_seesaw::Adafruit_seesaw(I2C_HandleTypeDef *l_hI2c)
+{
+  if ((l_hI2c->State) == HAL_I2C_STATE_READY)
+  {
+    HAL_I2C_EnableListen_IT(l_hI2c);
 
+  }
 }
 
-bool Adafruit_seesaw::set_I2C(I2C_HandleTypeDef * hI2c) 
+bool Adafruit_seesaw::set_I2C(I2C_HandleTypeDef *hI2c)
 
 { // todo: open i2c channel with cla
   this->hi2c = hI2c;
+  if((this->hi2c)!=NULL)
+  {
+    HAL_I2C_DeInit(this->hi2c);
+  }
 
-return true;
+  this->hi2c = hI2c;
+
+  return true;
 }
-
 
 /*!
  *****************************************************************************************
@@ -80,12 +83,12 @@ return true;
  *
  *  @return     true if we could connect to the seesaw, false otherwise
  ****************************************************************************************/
-bool Adafruit_seesaw::begin(uint8_t addr, int8_t flow, bool reset) {
- this->hi2c->Devaddress = SEESAW_ADDRESS;
- HAL_I2C_IsDeviceReady (this->hi2c, this->hi2c->Devaddress, 10, 0);
- return true;
+bool Adafruit_seesaw::begin(uint8_t addr, int8_t flow, bool reset)
+{
+  this->hi2c->Devaddress = SEESAW_ADDRESS;
+  HAL_I2C_IsDeviceReady(this->hi2c, this->hi2c->Devaddress, 10, 0);
+  return true;
 }
-
 
 /*!
  *******************************************************************
@@ -96,7 +99,8 @@ bool Adafruit_seesaw::begin(uint8_t addr, int8_t flow, bool reset) {
  * @returns  True on I2C write success, false otherwise
 
  ********************************************************************/
-bool Adafruit_seesaw::SWReset() {
+bool Adafruit_seesaw::SWReset()
+{
   return this->write8(SEESAW_STATUS_BASE, SEESAW_STATUS_SWRST, 0xFF);
 }
 
@@ -107,7 +111,8 @@ bool Adafruit_seesaw::SWReset() {
  *option is included, the corresponding bit is set. For example, if the ADC
  *module is compiled in then (ss.getOptions() & (1UL << SEESAW_ADC_BASE)) > 0
  ***********************************************************************/
-uint32_t Adafruit_seesaw::getOptions() {
+uint32_t Adafruit_seesaw::getOptions()
+{
   uint8_t buf[4];
   this->read(SEESAW_STATUS_BASE, SEESAW_STATUS_OPTIONS, buf, 4);
   uint32_t ret = ((uint32_t)buf[0] << 24) | ((uint32_t)buf[1] << 16) |
@@ -121,7 +126,8 @@ uint32_t Adafruit_seesaw::getOptions() {
  *  @return     The version code. Bits [31:16] will be a date code, [15:0] will
  *be the product id.
  ********************************************************************/
-uint32_t Adafruit_seesaw::getVersion() {
+uint32_t Adafruit_seesaw::getVersion()
+{
   uint8_t buf[4];
   this->read(SEESAW_STATUS_BASE, SEESAW_STATUS_VERSION, buf, 4);
   uint32_t ret = ((uint32_t)buf[0] << 24) | ((uint32_t)buf[1] << 16) |
@@ -139,7 +145,8 @@ uint32_t Adafruit_seesaw::getVersion() {
  *  @return       Always returns true.
  ********************************************************************/
 bool Adafruit_seesaw::getProdDatecode(uint16_t *pid, uint8_t *year,
-                                      uint8_t *mon, uint8_t *day) {
+                                      uint8_t *mon, uint8_t *day)
+{
   uint32_t vers = getVersion();
   *pid = vers >> 16;
 
@@ -159,7 +166,8 @@ bool Adafruit_seesaw::getProdDatecode(uint16_t *pid, uint8_t *year,
  *INPUT_PULLUP.
 
  ************************************************************************/
-void Adafruit_seesaw::pinMode(uint8_t pin, uint8_t mode) {
+void Adafruit_seesaw::pinMode(uint8_t pin, uint8_t mode)
+{
   if (pin >= 32)
     pinModeBulk(0, 1ul << (pin - 32), mode);
   else
@@ -175,7 +183,8 @@ void Adafruit_seesaw::pinMode(uint8_t pin, uint8_t mode) {
  *	@param		value the value to write to the GPIO pin. This should be
  *HIGH or LOW.
  ***************************************************************************/
-void Adafruit_seesaw::digitalWrite(uint8_t pin, uint8_t value) {
+void Adafruit_seesaw::digitalWrite(uint8_t pin, uint8_t value)
+{
   if (pin >= 32)
     digitalWriteBulk(0, 1ul << (pin - 32), value);
   else
@@ -191,7 +200,8 @@ void Adafruit_seesaw::digitalWrite(uint8_t pin, uint8_t value) {
  *
  *  @return     the status of the pin. HIGH or LOW (1 or 0).
  ***********************************************************************/
-bool Adafruit_seesaw::digitalRead(uint8_t pin) {
+bool Adafruit_seesaw::digitalRead(uint8_t pin)
+{
   if (pin >= 32)
     return digitalReadBulkB((1ul << (pin - 32))) != 0;
   else
@@ -209,7 +219,8 @@ bool Adafruit_seesaw::digitalRead(uint8_t pin) {
  *  @return     the status of the passed pins. If 0b0110 was passed and pin 2 is
  *high and pin 3 is low, 0b0010 (decimal number 2) will be returned.
  *******************************************************************/
-uint32_t Adafruit_seesaw::digitalReadBulk(uint32_t pins) {
+uint32_t Adafruit_seesaw::digitalReadBulk(uint32_t pins)
+{
   uint8_t buf[4];
   this->read(SEESAW_GPIO_BASE, SEESAW_GPIO_BULK, buf, 4);
   uint32_t ret = ((uint32_t)buf[0] << 24) | ((uint32_t)buf[1] << 16) |
@@ -226,7 +237,8 @@ uint32_t Adafruit_seesaw::digitalReadBulk(uint32_t pins) {
  *  @return     the status of the passed pins. If 0b0110 was passed and pin 2 is
  *high and pin 3 is low, 0b0010 (decimal number 2) will be returned.
  ************************************************************************/
-uint32_t Adafruit_seesaw::digitalReadBulkB(uint32_t pins) {
+uint32_t Adafruit_seesaw::digitalReadBulkB(uint32_t pins)
+{
   uint8_t buf[8];
   this->read(SEESAW_GPIO_BASE, SEESAW_GPIO_BULK, buf, 8);
   uint32_t ret = ((uint32_t)buf[4] << 24) | ((uint32_t)buf[5] << 16) |
@@ -244,7 +256,8 @@ uint32_t Adafruit_seesaw::digitalReadBulkB(uint32_t pins) {
  *	@param		enabled pass true to enable the interrupts on the passed
  *pins, false to disable the interrupts on the passed pins.
  ***********************************************************************/
-void Adafruit_seesaw::setGPIOInterrupts(uint32_t pins, bool enabled) {
+void Adafruit_seesaw::setGPIOInterrupts(uint32_t pins, bool enabled)
+{
   uint8_t cmd[] = {(uint8_t)(pins >> 24), (uint8_t)(pins >> 16),
                    (uint8_t)(pins >> 8), (uint8_t)pins};
   if (enabled)
@@ -263,12 +276,15 @@ void Adafruit_seesaw::setGPIOInterrupts(uint32_t pins, bool enabled) {
  *
  *  @return     the analog value. This is an integer between 0 and 1023
  ***********************************************************************/
-uint16_t Adafruit_seesaw::analogRead(uint8_t pin) {
+uint16_t Adafruit_seesaw::analogRead(uint8_t pin)
+{
   uint8_t buf[2];
   uint8_t p = 0;
 
-  if (_hardwaretype == SEESAW_HW_ID_CODE_SAMD09) {
-    switch (pin) {
+  if (_hardwaretype == SEESAW_HW_ID_CODE_SAMD09)
+  {
+    switch (pin)
+    {
     case ADC_INPUT_0_PIN:
       p = 0;
       break;
@@ -284,16 +300,19 @@ uint16_t Adafruit_seesaw::analogRead(uint8_t pin) {
     default:
       return 0;
     }
-  } else if (_hardwaretype == SEESAW_HW_ID_CODE_TINY8X7) {
+  }
+  else if (_hardwaretype == SEESAW_HW_ID_CODE_TINY8X7)
+  {
     p = pin;
-  } else {
+  }
+  else
+  {
     return 0;
   }
 
   this->read(SEESAW_ADC_BASE, SEESAW_ADC_CHANNEL_OFFSET + p, buf, 2, 500);
   uint16_t ret = ((uint16_t)buf[0] << 8) | buf[1];
   return ret;
-
 }
 
 /*!
@@ -304,14 +323,17 @@ uint16_t Adafruit_seesaw::analogRead(uint8_t pin) {
  *
  *  @return     the analog value. This is an integer between 0 and 1023
  ****************************************************************************/
-uint16_t Adafruit_seesaw::touchRead(uint8_t pin) {
+uint16_t Adafruit_seesaw::touchRead(uint8_t pin)
+{
   uint8_t buf[2];
   uint8_t p = pin;
   uint16_t ret = 65535;
 
-  for (uint8_t retry = 0; retry < 5; retry++) {
+  for (uint8_t retry = 0; retry < 5; retry++)
+  {
     if (this->read(SEESAW_TOUCH_BASE, SEESAW_TOUCH_CHANNEL_OFFSET + p, buf, 2,
-                   3000 + retry * 1000)) {
+                   3000 + retry * 1000))
+    {
       ret = ((uint16_t)buf[0] << 8) | buf[1];
       break;
     }
@@ -329,8 +351,8 @@ uint16_t Adafruit_seesaw::touchRead(uint8_t pin) {
  *	@param		mode the mode to set the pins to. One of INPUT, OUTPUT,
  *or INPUT_PULLUP.
  ************************************************************************/
-void Adafruit_seesaw::pinModeBulk(uint32_t pins, uint8_t mode) {
- 
+void Adafruit_seesaw::pinModeBulk(uint32_t pins, uint8_t mode)
+{
 }
 
 /*!
@@ -346,8 +368,8 @@ void Adafruit_seesaw::pinModeBulk(uint32_t pins, uint8_t mode) {
  *or INPUT_PULLUP.
  ****************************************************************************************/
 void Adafruit_seesaw::pinModeBulk(uint32_t pinsa, uint32_t pinsb,
-                                  uint8_t mode) {
- 
+                                  uint8_t mode)
+{
 }
 
 /*!
@@ -360,7 +382,8 @@ void Adafruit_seesaw::pinModeBulk(uint32_t pinsa, uint32_t pinsb,
  *	@param		value pass HIGH to set the output on the passed pins to
  *HIGH, low to set the output on the passed pins to LOW.
  ****************************************************************************************/
-void Adafruit_seesaw::digitalWriteBulk(uint32_t pins, uint8_t value) {
+void Adafruit_seesaw::digitalWriteBulk(uint32_t pins, uint8_t value)
+{
   uint8_t cmd[] = {(uint8_t)(pins >> 24), (uint8_t)(pins >> 16),
                    (uint8_t)(pins >> 8), (uint8_t)pins};
   if (value)
@@ -382,11 +405,12 @@ void Adafruit_seesaw::digitalWriteBulk(uint32_t pins, uint8_t value) {
  *HIGH, low to set the output on the passed pins to LOW.
  ****************************************************************************************/
 void Adafruit_seesaw::digitalWriteBulk(uint32_t pinsa, uint32_t pinsb,
-                                       uint8_t value) {
+                                       uint8_t value)
+{
   uint8_t cmd[] = {(uint8_t)(pinsa >> 24), (uint8_t)(pinsa >> 16),
-                   (uint8_t)(pinsa >> 8),  (uint8_t)pinsa,
+                   (uint8_t)(pinsa >> 8), (uint8_t)pinsa,
                    (uint8_t)(pinsb >> 24), (uint8_t)(pinsb >> 16),
-                   (uint8_t)(pinsb >> 8),  (uint8_t)pinsb};
+                   (uint8_t)(pinsb >> 8), (uint8_t)pinsb};
   if (value)
     this->write(SEESAW_GPIO_BASE, SEESAW_GPIO_BULK_SET, cmd, 8);
   else
@@ -404,11 +428,14 @@ void Adafruit_seesaw::digitalWriteBulk(uint32_t pinsa, uint32_t pinsb,
  *	@param		width the width of the value to write. Defaults to 8. If
  *16 is passed a 16 bit value will be written.
  ****************************************************************************************/
-void Adafruit_seesaw::analogWrite(uint8_t pin, uint16_t value, uint8_t width) {
+void Adafruit_seesaw::analogWrite(uint8_t pin, uint16_t value, uint8_t width)
+{
   int8_t p = -1;
 
-  if (_hardwaretype == SEESAW_HW_ID_CODE_SAMD09) {
-    switch (pin) {
+  if (_hardwaretype == SEESAW_HW_ID_CODE_SAMD09)
+  {
+    switch (pin)
+    {
     case PWM_0_PIN:
       p = 0;
       break;
@@ -424,17 +451,24 @@ void Adafruit_seesaw::analogWrite(uint8_t pin, uint16_t value, uint8_t width) {
     default:
       return;
     }
-  } else if (_hardwaretype == SEESAW_HW_ID_CODE_TINY8X7) {
+  }
+  else if (_hardwaretype == SEESAW_HW_ID_CODE_TINY8X7)
+  {
     p = pin;
-  } else {
+  }
+  else
+  {
     return;
   }
 
-  if (width == 16) {
+  if (width == 16)
+  {
     uint8_t cmd[] = {(uint8_t)p, (uint8_t)(value >> 8), (uint8_t)value};
     this->write(SEESAW_TIMER_BASE, SEESAW_TIMER_PWM, cmd, 3);
-  } else {
-    uint16_t mappedVal = 0 ;//map(value, 0, 255, 0, 65535);
+  }
+  else
+  {
+    uint16_t mappedVal = 0; // map(value, 0, 255, 0, 65535);
     uint8_t cmd[] = {(uint8_t)p, (uint8_t)(mappedVal >> 8), (uint8_t)mappedVal};
     this->write(SEESAW_TIMER_BASE, SEESAW_TIMER_PWM, cmd, 3);
   }
@@ -453,9 +487,11 @@ void Adafruit_seesaw::analogWrite(uint8_t pin, uint16_t value, uint8_t width) {
  *6, and 7 are PWM enabled.
  *  @param      freq the frequency to set.
  ******************************************************************************/
-void Adafruit_seesaw::setPWMFreq(uint8_t pin, uint16_t freq) {
+void Adafruit_seesaw::setPWMFreq(uint8_t pin, uint16_t freq)
+{
   int8_t p = -1;
-  switch (pin) {
+  switch (pin)
+  {
   case PWM_0_PIN:
     p = 0;
     break;
@@ -471,7 +507,8 @@ void Adafruit_seesaw::setPWMFreq(uint8_t pin, uint16_t freq) {
   default:
     break;
   }
-  if (p > -1) {
+  if (p > -1)
+  {
     uint8_t cmd[] = {(uint8_t)p, (uint8_t)(freq >> 8), (uint8_t)freq};
     this->write(SEESAW_TIMER_BASE, SEESAW_TIMER_FREQ, cmd, 3);
   }
@@ -487,7 +524,8 @@ void Adafruit_seesaw::setPWMFreq(uint8_t pin, uint16_t freq) {
  *
  *  @param      sercom the sercom to enable the interrupt on.
  ****************************************************************************************/
-void Adafruit_seesaw::enableSercomDataRdyInterrupt(uint8_t sercom) {
+void Adafruit_seesaw::enableSercomDataRdyInterrupt(uint8_t sercom)
+{
   _sercom_inten.bit.DATA_RDY = 1;
   this->write8(SEESAW_SERCOM0_BASE + sercom, SEESAW_SERCOM_INTEN,
                _sercom_inten.reg);
@@ -499,7 +537,8 @@ void Adafruit_seesaw::enableSercomDataRdyInterrupt(uint8_t sercom) {
  *
  *  @param      sercom the sercom to disable the interrupt on.
  ****************************************************************************************/
-void Adafruit_seesaw::disableSercomDataRdyInterrupt(uint8_t sercom) {
+void Adafruit_seesaw::disableSercomDataRdyInterrupt(uint8_t sercom)
+{
   _sercom_inten.bit.DATA_RDY = 0;
   this->write8(SEESAW_SERCOM0_BASE + sercom, SEESAW_SERCOM_INTEN,
                _sercom_inten.reg);
@@ -514,7 +553,8 @@ void Adafruit_seesaw::disableSercomDataRdyInterrupt(uint8_t sercom) {
  *  @param      sercom the sercom to read data from.
  *  @returns    One byte of data
  ****************************************************************************************/
-char Adafruit_seesaw::readSercomData(uint8_t sercom) {
+char Adafruit_seesaw::readSercomData(uint8_t sercom)
+{
   return this->read8(SEESAW_SERCOM0_BASE + sercom, SEESAW_SERCOM_DATA);
 }
 
@@ -526,9 +566,10 @@ char Adafruit_seesaw::readSercomData(uint8_t sercom) {
  *  @param      addr the new address for the seesaw. This must be a valid 7 bit
  *I2C address.
  ****************************************************************************************/
-void Adafruit_seesaw::setI2CAddr(uint8_t addr) {
+void Adafruit_seesaw::setI2CAddr(uint8_t addr)
+{
   this->EEPROMWrite8(SEESAW_EEPROM_I2C_ADDR, addr);
-//  delay(250);
+  //  delay(250);
   this->begin(addr); // restart w/ the new addr
 }
 
@@ -539,7 +580,8 @@ void Adafruit_seesaw::setI2CAddr(uint8_t addr) {
  *  @return     the 7 bit I2C address of the seesaw... which you probably
  *already know because you just read data from it.
  ****************************************************************************************/
-uint8_t Adafruit_seesaw::getI2CAddr() {
+uint8_t Adafruit_seesaw::getI2CAddr()
+{
   return this->read8(SEESAW_EEPROM_BASE, SEESAW_EEPROM_I2C_ADDR);
 }
 
@@ -551,7 +593,8 @@ uint8_t Adafruit_seesaw::getI2CAddr() {
  *the SAMD09 breakout this is between 0 and 63.
  *	@param		val to write between 0 and 255
  ****************************************************************************************/
-void Adafruit_seesaw::EEPROMWrite8(uint8_t addr, uint8_t val) {
+void Adafruit_seesaw::EEPROMWrite8(uint8_t addr, uint8_t val)
+{
   this->EEPROMWrite(addr, &val, 1);
 }
 
@@ -565,7 +608,8 @@ void Adafruit_seesaw::EEPROMWrite8(uint8_t addr, uint8_t val) {
  *	@param		size the number of bytes to write. Writing past the end
  *of available EEPROM may result in undefined behavior.
  ****************************************************************************************/
-void Adafruit_seesaw::EEPROMWrite(uint8_t addr, uint8_t *buf, uint8_t size) {
+void Adafruit_seesaw::EEPROMWrite(uint8_t addr, uint8_t *buf, uint8_t size)
+{
   this->write(SEESAW_EEPROM_BASE, addr, buf, size);
 }
 
@@ -579,7 +623,8 @@ void Adafruit_seesaw::EEPROMWrite(uint8_t addr, uint8_t *buf, uint8_t size) {
  *  @return     the value between 0 and 255 that was read from the passed
  *address.
  ****************************************************************************************/
-uint8_t Adafruit_seesaw::EEPROMRead8(uint8_t addr) {
+uint8_t Adafruit_seesaw::EEPROMRead8(uint8_t addr)
+{
   return this->read8(SEESAW_EEPROM_BASE, addr);
 }
 
@@ -590,7 +635,8 @@ uint8_t Adafruit_seesaw::EEPROMRead8(uint8_t addr) {
  *  @param      baud the baud rate to set. This is an integer value. Baud rates
  *up to 115200 are supported.
  ****************************************************************************************/
-void Adafruit_seesaw::UARTSetBaud(uint32_t baud) {
+void Adafruit_seesaw::UARTSetBaud(uint32_t baud)
+{
   uint8_t cmd[] = {(uint8_t)(baud >> 24), (uint8_t)(baud >> 16),
                    (uint8_t)(baud >> 8), (uint8_t)baud};
   this->write(SEESAW_SERCOM0_BASE, SEESAW_SERCOM_BAUD, cmd, 4);
@@ -605,7 +651,8 @@ void Adafruit_seesaw::UARTSetBaud(uint32_t baud) {
  *  @param		enable passing true will enable the passed event,
  *passing false will disable it.
  ****************************************************************************************/
-void Adafruit_seesaw::setKeypadEvent(uint8_t key, uint8_t edge, bool enable) {
+void Adafruit_seesaw::setKeypadEvent(uint8_t key, uint8_t edge, bool enable)
+{
   keyState ks;
   ks.bit.STATE = enable;
   ks.bit.ACTIVE = (1 << edge);
@@ -618,7 +665,8 @@ void Adafruit_seesaw::setKeypadEvent(uint8_t key, uint8_t edge, bool enable) {
  *  @brief      enable the keypad interrupt that fires when events are in the
  *fifo.
  ****************************************************************************************/
-void Adafruit_seesaw::enableKeypadInterrupt() {
+void Adafruit_seesaw::enableKeypadInterrupt()
+{
   this->write8(SEESAW_KEYPAD_BASE, SEESAW_KEYPAD_INTENSET, 0x01);
 }
 
@@ -627,7 +675,8 @@ void Adafruit_seesaw::enableKeypadInterrupt() {
  *  @brief      disable the keypad interrupt that fires when events are in the
  *fifo.
  ****************************************************************************************/
-void Adafruit_seesaw::disableKeypadInterrupt() {
+void Adafruit_seesaw::disableKeypadInterrupt()
+{
   this->write8(SEESAW_KEYPAD_BASE, SEESAW_KEYPAD_INTENCLR, 0x01);
 }
 
@@ -636,7 +685,8 @@ void Adafruit_seesaw::disableKeypadInterrupt() {
  *  @brief      Get the number of events currently in the fifo
  *  @return     the number of events in the fifo
  ****************************************************************************************/
-uint8_t Adafruit_seesaw::getKeypadCount() {
+uint8_t Adafruit_seesaw::getKeypadCount()
+{
   return this->read8(SEESAW_KEYPAD_BASE, SEESAW_KEYPAD_COUNT, 500);
 }
 
@@ -648,7 +698,8 @@ uint8_t Adafruit_seesaw::getKeypadCount() {
  *  @param		count the number of events to read
  *  @returns    True on I2C read success
  ****************************************************************************************/
-bool Adafruit_seesaw::readKeypad(keyEventRaw *buf, uint8_t count) {
+bool Adafruit_seesaw::readKeypad(keyEventRaw *buf, uint8_t count)
+{
   return this->read(SEESAW_KEYPAD_BASE, SEESAW_KEYPAD_FIFO, (uint8_t *)buf,
                     count, 1000);
 }
@@ -659,7 +710,8 @@ bool Adafruit_seesaw::readKeypad(keyEventRaw *buf, uint8_t count) {
  *NOTE: not all seesaw firmwares have the temperature sensor enabled.
  *  @return     Temperature in degrees Celsius as a floating point value.
  ****************************************************************************************/
-float Adafruit_seesaw::getTemp() {
+float Adafruit_seesaw::getTemp()
+{
   uint8_t buf[4];
   this->read(SEESAW_STATUS_BASE, SEESAW_STATUS_TEMP, buf, 4, 1000);
   int32_t ret = ((uint32_t)buf[0] << 24) | ((uint32_t)buf[1] << 16) |
@@ -673,7 +725,8 @@ float Adafruit_seesaw::getTemp() {
  *  @param encoder Which encoder to use, defaults to 0
  *  @return     The encoder position as a 32 bit signed integer.
  ****************************************************************************************/
-int32_t Adafruit_seesaw::getEncoderPosition(uint8_t encoder) {
+int32_t Adafruit_seesaw::getEncoderPosition(uint8_t encoder)
+{
   uint8_t buf[4];
   this->read(SEESAW_ENCODER_BASE, SEESAW_ENCODER_POSITION + encoder, buf, 4);
   int32_t ret = ((uint32_t)buf[0] << 24) | ((uint32_t)buf[1] << 16) |
@@ -688,7 +741,8 @@ int32_t Adafruit_seesaw::getEncoderPosition(uint8_t encoder) {
  *  @param encoder Which encoder to use, defaults to 0
  *  @param     pos the position to set the encoder to.
  ****************************************************************************************/
-void Adafruit_seesaw::setEncoderPosition(int32_t pos, uint8_t encoder) {
+void Adafruit_seesaw::setEncoderPosition(int32_t pos, uint8_t encoder)
+{
   uint8_t buf[] = {(uint8_t)(pos >> 24), (uint8_t)(pos >> 16),
                    (uint8_t)(pos >> 8), (uint8_t)(pos & 0xFF)};
   this->write(SEESAW_ENCODER_BASE, SEESAW_ENCODER_POSITION + encoder, buf, 4);
@@ -700,7 +754,8 @@ void Adafruit_seesaw::setEncoderPosition(int32_t pos, uint8_t encoder) {
  *  @param encoder Which encoder to use, defaults to 0
  *  @return     The encoder change as a 32 bit signed integer.
  ****************************************************************************************/
-int32_t Adafruit_seesaw::getEncoderDelta(uint8_t encoder) {
+int32_t Adafruit_seesaw::getEncoderDelta(uint8_t encoder)
+{
   uint8_t buf[4];
   this->read(SEESAW_ENCODER_BASE, SEESAW_ENCODER_DELTA + encoder, buf, 4);
   int32_t ret = ((uint32_t)buf[0] << 24) | ((uint32_t)buf[1] << 16) |
@@ -715,7 +770,8 @@ int32_t Adafruit_seesaw::getEncoderDelta(uint8_t encoder) {
  *  @param encoder Which encoder to use, defaults to 0
  *  @returns    True on I2C write success
  ****************************************************************************************/
-bool Adafruit_seesaw::enableEncoderInterrupt(uint8_t encoder) {
+bool Adafruit_seesaw::enableEncoderInterrupt(uint8_t encoder)
+{
   return this->write8(SEESAW_ENCODER_BASE, SEESAW_ENCODER_INTENSET + encoder,
                       0x01);
 }
@@ -727,7 +783,8 @@ bool Adafruit_seesaw::enableEncoderInterrupt(uint8_t encoder) {
  *  @param encoder Which encoder to use, defaults to 0
  *  @returns    True on I2C write success
  ****************************************************************************************/
-bool Adafruit_seesaw::disableEncoderInterrupt(uint8_t encoder) {
+bool Adafruit_seesaw::disableEncoderInterrupt(uint8_t encoder)
+{
   return this->write8(SEESAW_ENCODER_BASE, SEESAW_ENCODER_INTENCLR + encoder,
                       0x01);
 }
@@ -742,7 +799,8 @@ bool Adafruit_seesaw::disableEncoderInterrupt(uint8_t encoder) {
  *	@param		value the value between 0 and 255 to write
  *  @returns    True on I2C write success
  ****************************************************************************************/
-bool Adafruit_seesaw::write8(byte regHigh, byte regLow, byte value) {
+bool Adafruit_seesaw::write8(byte regHigh, byte regLow, byte value)
+{
   return this->write(regHigh, regLow, &value, 1);
 }
 
@@ -759,11 +817,12 @@ bool Adafruit_seesaw::write8(byte regHigh, byte regLow, byte value) {
  *
  *  @return     the value between 0 and 255 read from the passed register
  ****************************************************************************************/
-uint8_t Adafruit_seesaw::read8(byte regHigh, byte regLow, uint16_t delay) {
-  uint8_t ret;
-  this->read(regHigh, regLow, &ret, 1, delay);
+uint8_t Adafruit_seesaw::read8(byte regHigh, byte regLow, uint16_t delay)
+{
+ 
+  //this->read(regHigh, regLow, &ret, 1, delay);
 
-  return ret;
+  return 1;
 }
 
 /**
@@ -781,7 +840,8 @@ uint8_t Adafruit_seesaw::read8(byte regHigh, byte regLow, uint16_t delay) {
  *  @returns    True on I2C read success
  ****************************************************************************************/
 bool Adafruit_seesaw::read(uint8_t regHigh, uint8_t regLow, uint8_t *buf,
-                           uint8_t num, uint16_t delay) {
+                           uint8_t num, uint16_t delay)
+{
   uint8_t pos = 0;
   uint8_t prefix[2];
   prefix[0] = (uint8_t)regHigh;
@@ -790,9 +850,9 @@ bool Adafruit_seesaw::read(uint8_t regHigh, uint8_t regLow, uint8_t *buf,
   // HAL_I2C_Master_Receive_DMA(this->hi2c,this->getI2CAddr,)
 
 #ifdef SEESAW_I2C_DEBUG
-    Serial.print("Reading ");
-    Serial.print(read_now);
-    Serial.println(" bytes");
+  Serial.print("Reading ");
+  Serial.print(read_now);
+  Serial.println(" bytes");
 #endif
 
 /*     if (!_i2c_dev->read(buf + pos, read_now)) {
@@ -800,12 +860,12 @@ bool Adafruit_seesaw::read(uint8_t regHigh, uint8_t regLow, uint8_t *buf,
     }
     pos += read_now; */
 #ifdef SEESAW_I2C_DEBUG
-    Serial.print("pos: ");
-    Serial.print(pos);
-    Serial.print(" num:");
-    Serial.println(num);
+  Serial.print("pos: ");
+  Serial.print(pos);
+  Serial.print(" num:");
+  Serial.println(num);
 #endif
-  
+
   return true;
 }
 
@@ -821,17 +881,14 @@ bool Adafruit_seesaw::read(uint8_t regHigh, uint8_t regLow, uint8_t *buf,
  *  @returns    True on I2C write success
  ****************************************************************************************/
 
-
 bool Adafruit_seesaw::write(uint8_t regHigh, uint8_t regLow,
-                            uint8_t *buf = NULL, uint8_t num = 0) {
-  
+                            uint8_t *buf = NULL, uint8_t num = 0)
+{
+
   //packet[0] = (uint8_t)regHigh;
-  // packet[1] = (uint8_t)regLow;
+  //packet[1] = (uint8_t)regLow;
 
-  HAL_I2C_Master_Transmit(this->hi2c,(uint16_t)SEESAW_ADDRESS,aTxBuffer,8,0);
-  
-
-
+  HAL_I2C_Master_Transmit(this->hi2c, (uint16_t)SEESAW_ADDRESS, aTxBuffer, 8, 0);
 
   return true;
 }
@@ -847,10 +904,11 @@ bool Adafruit_seesaw::write(uint8_t regHigh, uint8_t regLow,
  *  @param      character the character to write.
  *  @returns    The number of bytes written (1)
  ****************************************************************************************/
-size_t Adafruit_seesaw::write(uint8_t character) {
+size_t Adafruit_seesaw::write(uint8_t character)
+{
   // TODO: add support for multiple sercoms
   this->write8(SEESAW_SERCOM0_BASE, SEESAW_SERCOM_DATA, character);
- // delay(1); // TODO: this can be optimized... it's only needed for longer writes
+  // delay(1); // TODO: this can be optimized... it's only needed for longer writes
   return 1;
 }
 
@@ -866,10 +924,12 @@ size_t Adafruit_seesaw::write(uint8_t character) {
  *  @param      str the string to write
  *  @return     number of bytes written (not including trailing 0)
  *********************************************************************/
-size_t Adafruit_seesaw::write(const char *str) {
+size_t Adafruit_seesaw::write(const char *str)
+{
   uint8_t buf[32];
   uint8_t len = 0;
-  while (*str) {
+  while (*str)
+  {
     buf[len] = *str;
     str++;
     len++;
@@ -881,5 +941,5 @@ size_t Adafruit_seesaw::write(const char *str) {
 void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *I2cHandle)
 {
   /* Toggle LED2: Transfer in reception process is correct */
- // BSP_LED_Toggle(LED2);
+  // BSP_LED_Toggle(LED2);
 }

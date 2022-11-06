@@ -1,6 +1,6 @@
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __OLPOL_SERIAL
-#define __OLPOL_SERIAL
+#ifndef __OMWOF_SERIAL
+#define __OMWOF_SERIAL
 
 #ifdef __cplusplus
  extern "C" {

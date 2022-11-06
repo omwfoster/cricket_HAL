@@ -1,7 +1,7 @@
-#include "olpol_serial.h"
+#include "omwof_serial.h"
 
 
-UART_HandleTypeDef huart4;
+//UART_HandleTypeDef huart4;
 
 void MX_UART4_Init()
 {

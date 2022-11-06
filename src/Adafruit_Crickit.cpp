@@ -1,4 +1,4 @@
-#include "Adafruit_Crickit.h"
+#include "Adafruit_Crickit.hpp"
 
 
 // the pwm pins

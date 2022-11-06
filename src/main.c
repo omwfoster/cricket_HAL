@@ -20,9 +20,9 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "olpol_serial.h"
-#include "Adafruit_seesaw.h"
-#include "Adafruit_Crickit.h"
+#include "omwof_serial.h"
+#include "Adafruit_seesaw.hpp"
+#include "Adafruit_Crickit.hpp"
 
 
 /* Private includes ----------------------------------------------------------*/
@@ -56,7 +56,7 @@ TIM_HandleTypeDef htim4;
 DMA_HandleTypeDef hdma_tim3_ch3;
 bool i2c_recieve;
 
-Adafruit_Crickit * hcrick1;
+//Adafruit_Crickit * hcrick1;
 
 DMA_HandleTypeDef hdma_uart4_rx;
 
@@ -118,8 +118,8 @@ int main(void)
  
 
   i2c_recieve = false;
-  hcrick1 = new Adafruit_Crickit(&hi2c3);
-  hcrick1->begin(SEESAW_ADDRESS);
+  //hcrick1 = new Adafruit_Crickit(&hi2c3);
+  //hcrick1->begin(SEESAW_ADDRESS);
   
 
   /* USER CODE BEGIN Init */

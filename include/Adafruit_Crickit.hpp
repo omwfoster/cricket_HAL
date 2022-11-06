@@ -3,11 +3,9 @@
 
 
 
-#include "stm32f4xx.h"
-#include "stm32f405xx.h"
-#include <arm_math.h>
 
-#include "omwof_packet.hpp"
+
+//#include "omwof_packet.hpp"
 #include "Adafruit_seesaw.hpp"
 
 

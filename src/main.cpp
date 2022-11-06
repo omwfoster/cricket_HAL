@@ -19,10 +19,10 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
+#include "main.hpp"
 #include "omwof_serial.h"
-#include "Adafruit_seesaw.hpp"
-#include "Adafruit_Crickit.hpp"
+#include "stdbool.h"
+
 
 
 /* Private includes ----------------------------------------------------------*/

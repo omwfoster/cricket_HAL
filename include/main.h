@@ -2,6 +2,16 @@
 #ifndef __MAIN_H
 #define __MAIN_H
 
+#include "stm32f4xx.h"
+#include "stm32f405xx.h"
+#include "stm32f4xx_hal.h"
+#include <arm_math.h>
+
+
+
+
+
+
 
 
 #ifdef __cplusplus
@@ -11,9 +21,6 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f405xx.h"
 #include "stm32f4xx_hal.h"
-#include "Adafruit_Crickit.hpp"
-
-
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 

@@ -3,23 +3,20 @@
 
 #include "stdint.h"
 #include "stdbool.h"
+#include "omwof_ada_interface.hpp"
 
 
-typedef struct __attribute__((packed, aligned(1)))  om_packet{
-    uint8_t reg_high;
-    uint8_t reg_low;
-    uint8_t message[30];
-    uint8_t cursor;
-}om_packet;
 
-class packet_class
+
+class data_pack
 {
     public:
-    packet_class();
-    ~packet_class();
+    data_pack();
+    ~data_pack();
     
     bool set_high_reg(uint8_t);
     bool set_low_reg(uint8_t);
+    bool set_string(char *, uint8_t len);
 
 
     private:

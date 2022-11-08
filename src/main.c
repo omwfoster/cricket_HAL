@@ -19,9 +19,11 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include "main.hpp"
+#include "main.h"
 #include "omwof_serial.h"
 #include "stdbool.h"
+#include "omwof_ada_interface.hpp"
+
 
 
 
@@ -115,11 +117,11 @@ int main(void)
   MX_TIM4_Init();
   MX_UART4_Init();
   MX_I2C3_Init();
+  cricket_main_c();
  
 
   i2c_recieve = false;
-  //hcrick1 = new Adafruit_Crickit(&hi2c3);
-  //hcrick1->begin(SEESAW_ADDRESS);
+ 
   
 
   /* USER CODE BEGIN Init */

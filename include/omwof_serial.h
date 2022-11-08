@@ -9,7 +9,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx.h"
 #include "stm32f4xx_hal_uart.h"
-UART_HandleTypeDef huart4;
+UART_HandleTypeDef * omwof_serial;
 /// @brief 
 void MX_UART4_Init();
 

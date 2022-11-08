@@ -46,11 +46,11 @@ Print::Print()
  *
  *  @param      i2c_bus the I2C bus connected to the seesaw, defaults to "Wire"
  ****************************************************************************************/
-Adafruit_seesaw::Adafruit_seesaw(I2C_HandleTypeDef *l_hI2c)
+Adafruit_seesaw::Adafruit_seesaw(I2C_HandleTypeDef *hI2c)
 {
-  if ((l_hI2c->State) == HAL_I2C_STATE_READY)
+  if ((hI2c->State) == HAL_I2C_STATE_READY)
   {
-    HAL_I2C_EnableListen_IT(l_hI2c);
+    HAL_I2C_EnableListen_IT(hI2c);
 
   }
 }
@@ -64,9 +64,19 @@ bool Adafruit_seesaw::set_I2C(I2C_HandleTypeDef *hI2c)
     HAL_I2C_DeInit(this->hi2c);
   }
 
-  this->hi2c = hI2c;
+    this->hi2c = hI2c;
 
-  return true;
+    if ((hI2c->State) == HAL_I2C_STATE_READY)
+  {
+    HAL_I2C_Init(hi2c);
+    HAL_I2C_EnableListen_IT(hI2c);
+    return true;
+  }
+  else{
+    return false;
+  }
+
+
 }
 
 /*!
@@ -819,8 +829,8 @@ bool Adafruit_seesaw::write8(byte regHigh, byte regLow, byte value)
  ****************************************************************************************/
 uint8_t Adafruit_seesaw::read8(byte regHigh, byte regLow, uint16_t delay)
 {
- 
-  //this->read(regHigh, regLow, &ret, 1, delay);
+  uint8_t ret = 0;
+  this->read(regHigh, regLow, &ret, 1, delay);
 
   return 1;
 }
@@ -885,8 +895,7 @@ bool Adafruit_seesaw::write(uint8_t regHigh, uint8_t regLow,
                             uint8_t *buf = NULL, uint8_t num = 0)
 {
 
-  //packet[0] = (uint8_t)regHigh;
-  //packet[1] = (uint8_t)regLow;
+
 
   HAL_I2C_Master_Transmit(this->hi2c, (uint16_t)SEESAW_ADDRESS, aTxBuffer, 8, 0);
 
@@ -940,6 +949,5 @@ size_t Adafruit_seesaw::write(const char *str)
 
 void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *I2cHandle)
 {
-  /* Toggle LED2: Transfer in reception process is correct */
-  // BSP_LED_Toggle(LED2);
+
 }

@@ -1,7 +1,5 @@
-
-
-#ifndef LIB_SEESAW_H
-#define LIB_SEESAW_H
+#ifndef LIB_SEESAW_HPP
+#define LIB_SEESAW_HPP
 
 #include <arm_math.h>
 #include "stm32f4xx.h"

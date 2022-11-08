@@ -1,21 +1,27 @@
 #include "omwof_packet.hpp"
 #include "string.h"
 
-packet_class::packet_class()
+data_pack::data_pack()
 {
-    memset(&(this->payload),0,sizeof(packet_class));
+    memset(&(this->payload),0,sizeof(data_pack));
 }
-packet_class::~packet_class()
+data_pack::~data_pack()
 {
 }
 
-bool packet_class::set_high_reg(uint8_t a)
+bool data_pack::set_high_reg(uint8_t a)
 {
     this->payload.reg_high=a;
     return true;
 }
-bool packet_class::set_low_reg(uint8_t a)
+bool data_pack::set_low_reg(uint8_t a)
 {
     this->payload.reg_low=a;
+    return true;
+}
+
+bool data_pack::set_string(char * str_out, uint8_t len)
+{
+    this->set_string(str_out,len);
     return true;
 }

@@ -1,7 +1,6 @@
 #include "omwof_ada_interface.hpp"
 #include "Adafruit_Crickit.hpp"
 #include "omwof_packet.hpp"
-#include "omwof_serial.h"
 #include "seesaw_neopixel.h"
 #include "seesaw_servo.h"
 #include "stm32f4xx.h"

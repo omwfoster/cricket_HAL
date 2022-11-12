@@ -4,16 +4,6 @@
 #include "stdint.h"
 
 
-typedef struct __attribute__((packed, aligned(1)))  om_packet{
-    uint8_t reg_high;
-    uint8_t reg_low;
-    uint8_t message[30];
-    uint8_t cursor;
-    bool processed;
-}om_packet;
-
-
-
 #ifdef __cplusplus
 extern "C"
 {

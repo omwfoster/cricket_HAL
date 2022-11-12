@@ -28,11 +28,9 @@
 
 #include "Adafruit_seesaw.hpp"
 
-/* Buffer used for transmission */
-uint8_t aTxBuffer[] = " ****I2C_TwoBoards communication based on DMA****  ****I2C_TwoBoards communication based on DMA****  ****I2C_TwoBoards communication based on DMA**** ";
 
-/* Buffer used for reception */
-uint8_t aRxBuffer[RXBUFFERSIZE];
+
+
 
 Print::Print()
 {
@@ -48,6 +46,9 @@ Print::Print()
  ****************************************************************************************/
 Adafruit_seesaw::Adafruit_seesaw(I2C_HandleTypeDef *hI2c)
 {
+
+  dp_out = new data_pack();
+
   if ((hI2c->State) == HAL_I2C_STATE_READY)
   {
     HAL_I2C_EnableListen_IT(hI2c);
@@ -891,11 +892,18 @@ bool Adafruit_seesaw::read(uint8_t regHigh, uint8_t regLow, uint8_t *buf,
  *  @returns    True on I2C write success
  ****************************************************************************************/
 
+
+uint8_t output_string[30];
+uint8_t  * aTxBuffer = &output_string[0];
 bool Adafruit_seesaw::write(uint8_t regHigh, uint8_t regLow,
                             uint8_t *buf = NULL, uint8_t num = 0)
 {
 
+  dp_out->set_high_reg(regHigh);
+  dp_out->set_low_reg(regLow);
+  dp_out->set_string(buf,num);
 
+ 
 
   HAL_I2C_Master_Transmit(this->hi2c, (uint16_t)SEESAW_ADDRESS, aTxBuffer, 8, 0);
 

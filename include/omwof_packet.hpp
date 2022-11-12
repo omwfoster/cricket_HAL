@@ -5,7 +5,15 @@
 #include "stdbool.h"
 #include "omwof_ada_interface.hpp"
 
+#define MESSAGE_LENGTH 30
 
+typedef struct __attribute__((packed, aligned(1)))  om_packet{
+    uint8_t reg_high;
+    uint8_t reg_low;
+    uint8_t message[MESSAGE_LENGTH];
+    uint8_t cursor;
+    bool processed;
+}om_packet;
 
 
 class data_pack
@@ -16,19 +24,11 @@ class data_pack
     
     bool set_high_reg(uint8_t);
     bool set_low_reg(uint8_t);
-    bool set_string(char *, uint8_t len);
-
+    bool set_string(uint8_t *, uint8_t len);
+    om_packet * output_string();
 
     private:
-
     om_packet payload;
-
-
-
-
-
-
-
 
 };
 

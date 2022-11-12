@@ -2,6 +2,7 @@
 #ifndef __MAIN_H
 #define __MAIN_H
 
+#include "defines.h"
 #include "stm32f4xx.h"
 #include "stm32f405xx.h"
 #include "stm32f4xx_hal.h"

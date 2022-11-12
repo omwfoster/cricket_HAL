@@ -3,7 +3,7 @@
 
 data_pack::data_pack()
 {
-    memset(&(this->payload),0,sizeof(data_pack));
+    memset(&(this->payload), 0, sizeof(data_pack));
 }
 data_pack::~data_pack()
 {
@@ -11,17 +11,24 @@ data_pack::~data_pack()
 
 bool data_pack::set_high_reg(uint8_t a)
 {
-    this->payload.reg_high=a;
+    this->payload.reg_high = a;
     return true;
 }
 bool data_pack::set_low_reg(uint8_t a)
 {
-    this->payload.reg_low=a;
+    this->payload.reg_low = a;
     return true;
 }
 
-bool data_pack::set_string(char * str_out, uint8_t len)
+bool data_pack::set_string(uint8_t *str_out, uint8_t len)
 {
-    this->set_string(str_out,len);
-    return true;
+    if (len < MESSAGE_LENGTH)
+    {
+        memcpy(&this->payload.message[0], (void *)str_out, (size_t)len);
+        return true;
+    }
+    else
+    {
+        return false
+    }
 }

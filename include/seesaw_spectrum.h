@@ -18,7 +18,7 @@ public:
     @param  Wi  TwoWire interface this works through.
   */
   /**************************************************************************/
-  seesaw_Audio_Spectrum(TwoWire *Wi = NULL) : Adafruit_seesaw(Wi) {}
+  seesaw_Audio_Spectrum(I2C_HandleTypeDef *  x) : Adafruit_seesaw(x) {}
 
   ~seesaw_Audio_Spectrum() {}
 

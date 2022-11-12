@@ -20,7 +20,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "omwof_serial.h"
+#include "defines.h"
+
 #include "stdbool.h"
 #include "omwof_ada_interface.hpp"
 
@@ -66,10 +67,41 @@ DMA_HandleTypeDef hdma_uart4_rx;
  static void MX_DMA_Init(void);
  static void MX_TIM3_Init(void);
  static void MX_TIM4_Init(void);
- void MX_UART4_Init(void);
  static void MX_I2C3_Init(void);
+ void PrintInfo(UART_HandleTypeDef *huart, uint8_t *String, uint16_t Size);
+ void StartReception(void);
+ void UserDataTreatment(UART_HandleTypeDef *huart, uint8_t* pData, uint16_t Size);
 
 /* USER CODE BEGIN PV */
+UART_HandleTypeDef huart2;
+DMA_HandleTypeDef hdma_usart2_rx;
+
+/* USER CODE BEGIN PV */
+/**
+  * @brief Text strings printed on PC Com port for user information
+  */
+uint8_t aTextInfoStart[] = "\r\nUSART Example : Enter characters to fill reception buffers.\r\n";
+
+uint8_t aRXBufferUser[RX_BUFFER_SIZE];
+
+/**
+  * @brief Data buffers used to manage received data in interrupt routine
+  */
+uint8_t aRXBufferA[RX_BUFFER_SIZE];
+uint8_t aRXBufferB[RX_BUFFER_SIZE];
+
+__IO uint32_t     uwNbReceivedChars;
+uint8_t *pBufferReadyForUser;
+uint8_t *pBufferReadyForReception;
+
+/* USER CODE END PV */
+
+
+static void MX_USART2_UART_Init(void);
+/* USER CODE BEGIN PFP */
+void PrintInfo(UART_HandleTypeDef *huart, uint8_t *String, uint16_t Size);
+void StartReception(void);
+void UserDataTreatment(UART_HandleTypeDef *huart, uint8_t* pData, uint16_t Size);
 
 // 25AA040A instructions
 const uint8_t EEPROM_READ = 0b00000011;
@@ -115,7 +147,7 @@ int main(void)
   MX_DMA_Init();
   MX_TIM3_Init();
   MX_TIM4_Init();
-  MX_UART4_Init();
+  
   MX_I2C3_Init();
   cricket_main_c();
  
@@ -141,13 +173,12 @@ int main(void)
 
   // CS pin should default high
 
+    /* USER CODE BEGIN 2 */
+
+  MX_USART2_UART_Init();
+  /* Initiate Continuous reception */
+  StartReception();
  
-
- 
-
-
-
-  /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -359,6 +390,112 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+
+}
+
+static void MX_USART2_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART2_Init 0 */
+
+  /* USER CODE END USART2_Init 0 */
+
+  /* USER CODE BEGIN USART2_Init 1 */
+
+  /* USER CODE END USART2_Init 1 */
+  huart2.Instance = USART2;
+  huart2.Init.BaudRate = 115200;
+  huart2.Init.WordLength = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits = UART_STOPBITS_1;
+  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart2) != HAL_OK)
+  {
+  //  Error_Handler();
+  }
+  /* USER CODE BEGIN USART2_Init 2 */
+
+  /* USER CODE END USART2_Init 2 */
+
+}
+
+void PrintInfo(UART_HandleTypeDef *huart, uint8_t *String, uint16_t Size)
+{
+  if (HAL_OK != HAL_UART_Transmit(huart, String, Size, 100))
+  {
+  //  Error_Handler();
+  }
+}
+
+/**
+  * @brief  This function prints user info on PC com port and initiates RX transfer
+  * @retval None
+  */
+void StartReception(void)
+{
+  /* Initializes Buffer swap mechanism (used in User callback) :
+     - 2 physical buffers aRXBufferA and aRXBufferB (RX_BUFFER_SIZE length)
+  */
+  pBufferReadyForReception = aRXBufferA;
+  pBufferReadyForUser      = aRXBufferB;
+  uwNbReceivedChars        = 0;
+
+  /* Print user info on PC com port */
+  PrintInfo(&huart2, aTextInfoStart, COUNTOF(aTextInfoStart));
+
+  /* Initializes Rx sequence using Reception To Idle event API.
+     As DMA channel associated to UART Rx is configured as Circular,
+     reception is endless.
+     If reception has to be stopped, call to HAL_UART_AbortReceive() could be used.
+
+     Use of HAL_UARTEx_ReceiveToIdle_DMA service, will generate calls to
+     user defined HAL_UARTEx_RxEventCallback callback for each occurrence of
+     following events :
+     - DMA RX Half Transfer event (HT)
+     - DMA RX Transfer Complete event (TC)
+     - IDLE event on UART Rx line (indicating a pause is UART reception flow)
+  */
+  if (HAL_OK != HAL_UARTEx_ReceiveToIdle_DMA(&huart2, aRXBufferUser, RX_BUFFER_SIZE))
+  {
+   // Error_Handler();
+  }
+}
+
+/**
+  * @brief  This function handles buffer containing received data on PC com port
+  * @note   In this example, received data are sent back on UART Tx (loopback)
+  *         Any other processing such as copying received data in a larger buffer to make it
+  *         available for application, could be implemented here.
+  * @note   This routine is executed in Interrupt context.
+  * @param  huart UART handle.
+  * @param  pData Pointer on received data buffer to be processed
+  * @retval Size  Nb of received characters available in buffer
+  */
+void UserDataTreatment(UART_HandleTypeDef *huart, uint8_t* pData, uint16_t Size)
+{
+  /*
+   * This function might be called in any of the following interrupt contexts :
+   *  - DMA TC and HT events
+   *  - UART IDLE line event
+   *
+   * pData and Size defines the buffer where received data have been copied, in order to be processed.
+   * During this processing of already received data, reception is still ongoing.
+   *
+   */
+  uint8_t* pBuff = pData;
+  uint8_t  i;
+
+  /* Implementation of loopback is on purpose implemented in direct register access,
+     in order to be able to echo received characters as fast as they are received.
+     Wait for TC flag to be raised at end of transmit is then removed, only TXE is checked */
+  for (i = 0; i < Size; i++)
+  {
+    while (!(__HAL_UART_GET_FLAG(huart, UART_FLAG_TXE))) {}
+    huart->Instance->DR = *pBuff;
+    pBuff++;
+  }
 
 }
 

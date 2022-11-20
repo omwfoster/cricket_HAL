@@ -48,6 +48,9 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+
+USBH_HandleTypeDef hUSBHost;
+CDC_ApplicationTypeDef Appli_state = APPLICATION_IDLE;
 SPI_HandleTypeDef hspi1;
 
 I2C_HandleTypeDef hi2c3;
@@ -70,7 +73,9 @@ DMA_HandleTypeDef hdma_uart4_rx;
  static void MX_I2C3_Init(void);
  void PrintInfo(UART_HandleTypeDef *huart, uint8_t *String, uint16_t Size);
  void StartReception(void);
- void UserDataTreatment(UART_HandleTypeDef *huart, uint8_t* pData, uint16_t Size);
+ void UserDataTreatment(UART_HandleTypeDef *huart, uint8_t* pData, uint16_t Size);\
+ static void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id);
+ static void CDC_InitApplication(void);
 
 /* USER CODE BEGIN PV */
 UART_HandleTypeDef huart2;
@@ -175,7 +180,7 @@ int main(void)
 
     /* USER CODE BEGIN 2 */
 
-  MX_USART2_UART_Init();
+  
   /* Initiate Continuous reception */
   StartReception();
  
@@ -393,33 +398,37 @@ static void MX_GPIO_Init(void)
 
 }
 
-static void MX_USART2_UART_Init(void)
+/**
+  * @brief  User Process
+  * @param  phost: Host Handle
+  * @param  id: Host Library user message ID
+  * @retval None
+  */
+static void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id)
 {
-
-  /* USER CODE BEGIN USART2_Init 0 */
-
-  /* USER CODE END USART2_Init 0 */
-
-  /* USER CODE BEGIN USART2_Init 1 */
-
-  /* USER CODE END USART2_Init 1 */
-  huart2.Instance = USART2;
-  huart2.Init.BaudRate = 115200;
-  huart2.Init.WordLength = UART_WORDLENGTH_8B;
-  huart2.Init.StopBits = UART_STOPBITS_1;
-  huart2.Init.Parity = UART_PARITY_NONE;
-  huart2.Init.Mode = UART_MODE_TX_RX;
-  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart2) != HAL_OK)
-  {
-  //  Error_Handler();
+  switch(id)
+  { 
+  case HOST_USER_SELECT_CONFIGURATION:
+    break;
+    
+  case HOST_USER_DISCONNECTION:
+    Appli_state = APPLICATION_DISCONNECT;
+    break;
+    
+  case HOST_USER_CLASS_ACTIVE:
+    Appli_state = APPLICATION_READY;
+    break;
+    
+  case HOST_USER_CONNECTION:
+    Appli_state = APPLICATION_START;
+    break;
+    
+  default:
+    break; 
   }
-  /* USER CODE BEGIN USART2_Init 2 */
-
-  /* USER CODE END USART2_Init 2 */
-
 }
+
+
 
 void PrintInfo(UART_HandleTypeDef *huart, uint8_t *String, uint16_t Size)
 {

@@ -15,6 +15,11 @@ typedef struct __attribute__((packed, aligned(1)))  om_packet{
     bool processed;
 }om_packet;
 
+typedef struct om_return_string{
+    uint8_t * head;
+    uint8_t length;
+}om_return_string;
+
 
 class data_pack
 {
@@ -25,9 +30,10 @@ class data_pack
     bool set_high_reg(uint8_t);
     bool set_low_reg(uint8_t);
     bool set_string(uint8_t *, uint8_t len);
-    om_packet * output_string();
+    om_return_string * return_packet();
 
     private:
+    void om_packet_size();
     om_packet payload;
 
 };

@@ -29,6 +29,6 @@ bool data_pack::set_string(uint8_t *str_out, uint8_t len)
     }
     else
     {
-        return false
+        return false;
     }
 }

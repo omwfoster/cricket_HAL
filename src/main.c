@@ -50,7 +50,6 @@
 /* Private variables ---------------------------------------------------------*/
 
 USBH_HandleTypeDef hUSBHost;
-CDC_ApplicationTypeDef Appli_state = APPLICATION_IDLE;
 SPI_HandleTypeDef hspi1;
 
 I2C_HandleTypeDef hi2c3;
@@ -75,7 +74,7 @@ DMA_HandleTypeDef hdma_uart4_rx;
  void StartReception(void);
  void UserDataTreatment(UART_HandleTypeDef *huart, uint8_t* pData, uint16_t Size);\
  static void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id);
- static void CDC_InitApplication(void);
+
 
 /* USER CODE BEGIN PV */
 UART_HandleTypeDef huart2;
@@ -102,11 +101,6 @@ uint8_t *pBufferReadyForReception;
 /* USER CODE END PV */
 
 
-static void MX_USART2_UART_Init(void);
-/* USER CODE BEGIN PFP */
-void PrintInfo(UART_HandleTypeDef *huart, uint8_t *String, uint16_t Size);
-void StartReception(void);
-void UserDataTreatment(UART_HandleTypeDef *huart, uint8_t* pData, uint16_t Size);
 
 // 25AA040A instructions
 const uint8_t EEPROM_READ = 0b00000011;
@@ -154,6 +148,14 @@ int main(void)
   MX_TIM4_Init();
   
   MX_I2C3_Init();
+
+  USBH_Init(&hUSBHost, USBH_UserProcess, 0);
+  
+  /* Add Supported Class */
+  USBH_RegisterClass(&hUSBHost, USBH_CDC_CLASS);
+  
+  /* Start Host Process */
+  USBH_Start(&hUSBHost);
   cricket_main_c();
  
 
@@ -506,6 +508,16 @@ void UserDataTreatment(UART_HandleTypeDef *huart, uint8_t* pData, uint16_t Size)
     pBuff++;
   }
 
+}
+
+void _Error_Handler(char *file, int line)
+{
+  /* USER CODE BEGIN Error_Handler_Debug */
+  /* User can add his own implementation to report the HAL error return state */
+  while(1)
+  {
+  }
+  /* USER CODE END Error_Handler_Debug */
 }
 
 

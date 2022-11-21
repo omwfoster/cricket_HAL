@@ -36,6 +36,11 @@
 #define USBH_DEBUG_LEVEL                      2
 #define USBH_USE_OS                           0
 
+
+
+#define HOST_HS 		0
+#define HOST_FS 		1
+
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
 /* CMSIS OS macros */   

@@ -37,7 +37,7 @@
 /* USER CODE END PV */
 
 HCD_HandleTypeDef hhcd_USB_OTG_FS;
-void Error_Handler(void);
+void Error_Handler();
 
 /* USER CODE BEGIN 0 */
 

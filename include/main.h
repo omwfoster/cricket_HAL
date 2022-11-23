@@ -10,18 +10,13 @@
 
 #include "usbh_core.h"
 #include "usbh_cdc.h"
+#include "usb_host.h"
 
 
-typedef enum {
-  APPLICATION_IDLE = 0,
-  APPLICATION_DISCONNECT,  
-  APPLICATION_START,
-  APPLICATION_READY,    
-  APPLICATION_RUNNING,
-}CDC_ApplicationTypeDef;
+
 
 extern USBH_HandleTypeDef hUSBHost;
-extern CDC_ApplicationTypeDef Appli_state;
+
 
 
 /* Exported constants --------------------------------------------------------*/

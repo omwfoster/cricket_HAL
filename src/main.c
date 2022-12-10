@@ -6,24 +6,30 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
+  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
-  * This software component is licensed by ST under Ultimate Liberty license
-  * SLA0044, the "License"; You may not use this file except in compliance with
-  * the License. You may obtain a copy of the License at:
-  *                             www.st.com/SLA0044
+  * This software component is licensed by ST under BSD 3-Clause license,
+  * the "License"; You may not use this file except in compliance with the
+  * License. You may obtain a copy of the License at:
+  *                        opensource.org/licenses/BSD-3-Clause
   *
   ******************************************************************************
   */
 /* USER CODE END Header */
+
 /* Includes ------------------------------------------------------------------*/
+#include <stdint.h>
+#include <string.h>
+#include <stdio.h>
 #include "main.h"
-#include "usb_host.h"
+#include "usb_device.h"
+
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "usbh_cdc.h"
+
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -33,6 +39,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -41,69 +48,32 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+I2C_HandleTypeDef hi2c1;
+
+SD_HandleTypeDef hsd;
+DMA_HandleTypeDef hdma_sdio_rx;
+DMA_HandleTypeDef hdma_sdio_tx;
 
 /* USER CODE BEGIN PV */
-
+static const uint32_t I2C_DELAY = 1000;         // Time (ms) to wait for I2C
+static const uint8_t PCT_I2C_ADDR = 0x37 << 1;  // Use 8-bit address
+static const uint8_t PCT_REG_TEMP = 0x00;       // Temperature register
+static const uint16_t PCT_ERROR = 0xFFFF;        // I2C/PCT error code
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-void MX_USB_HOST_Process(void);
-
+static void MX_DMA_Init(void);
+static void MX_SDIO_SD_Init(void);
+static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
-
+uint16_t ReadPCTTemperature(uint8_t i2c_addr);
+void BlinkLED(uint32_t blink_delay, uint8_t num_blinks);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
-extern USBH_HandleTypeDef hUsbHostFS;
-extern ApplicationTypeDef Appli_state;
-extern USBH_StatusTypeDef usbresult;
-
-#define RX_BUFF_SIZE   64  /* Max Received data 1KB */
-
-uint8_t CDC_RX_Buffer[RX_BUFF_SIZE];
-uint8_t CDC_TX_Buffer[RX_BUFF_SIZE];
-
-typedef enum {
-  CDC_STATE_IDLE = 0,
-  CDC_SEND,
-  CDC_RECEIVE,
-}CDC_StateTypedef;
-
-CDC_StateTypedef CDC_STATE = CDC_STATE_IDLE;
-
-uint8_t i=0;
-void CDC_HANDLE (void)
-{
-	switch (CDC_STATE)
-	{
-	case CDC_STATE_IDLE:
-	{
-		  USBH_CDC_Stop(&hUsbHostFS);
-		  int len = sprintf ((char *)CDC_TX_Buffer, "DATA = %d", i);
-		  if (USBH_CDC_Transmit (&hUsbHostFS, CDC_TX_Buffer, len) == USBH_OK)
-		  {
-			  CDC_STATE = CDC_RECEIVE;
-		  }
-		  i++;
-		  break;
-	}
-
-	case CDC_RECEIVE:
-	{
-		  USBH_CDC_Stop(&hUsbHostFS);
-		  usbresult = USBH_CDC_Receive(&hUsbHostFS, (uint8_t *) CDC_RX_Buffer, RX_BUFF_SIZE);
-		  HAL_Delay (1000);
-		  CDC_STATE = CDC_IDLE;
-	}
-
-	default:
-		  break;
-	}
-}
 
 /* USER CODE END 0 */
 
@@ -114,8 +84,10 @@ void CDC_HANDLE (void)
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+  
+ 
   /* USER CODE END 1 */
+  
 
   /* MCU Configuration--------------------------------------------------------*/
 
@@ -135,7 +107,10 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_USB_HOST_Init();
+  MX_DMA_Init();
+  MX_SDIO_SD_Init();
+  MX_USB_DEVICE_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -144,13 +119,34 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
-    MX_USB_HOST_Process();
 
-    if (Appli_state == APPLICATION_READY)
-    {
-    	CDC_HANDLE();
-    }
+   
+
+     
+
+      // Convert to float temperature value (Celsius)
+      
+
+     
+
+      // Print temperature to console
+      
+
+      // Turn LED on while writing to file
+      HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
+      
+      HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+
+      // If error writing to card, blink 3 times
+      
+        BlinkLED(200, 3);
+      
+    
+
+    // Wait before sampling again
+    HAL_Delay(1000);
+
+    /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
   }
@@ -161,56 +157,130 @@ int main(void)
   * @brief System Clock Configuration
   * @retval None
   */
-
 void SystemClock_Config(void)
 {
-   RCC_ClkInitTypeDef RCC_ClkInitStruct;
-   RCC_OscInitTypeDef RCC_OscInitStruct;
-   
-   /* Enable Power Control clock */
-   __HAL_RCC_PWR_CLK_ENABLE();
-   
-   /* The voltage scaling allows optimizing the power consumption when the device is 
-      clocked below the maximum system frequency, to update the voltage scaling value 
-      regarding system frequency refer to product datasheet.  */
-   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
- 
-   /* Enable HSE Oscillator and activate PLL with HSE as source */
-   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-   RCC_OscInitStruct.PLL.PLLM = 8;
-   RCC_OscInitStruct.PLL.PLLN = 336;
-   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-   RCC_OscInitStruct.PLL.PLLQ = 7;
-   if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-   {
-     /* Initialization Error */
-     Error_Handler();
-   }
-   
-   /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2 
-      clocks dividers */
-   RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
-   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;  
-   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;  
-   if(HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
-   {
-     /* Initialization Error */
-     Error_Handler();
-   }
- 
-   /* STM32F405x/407x/415x/417x Revision Z devices: prefetch is supported  */
-   if (HAL_GetREVID() == 0x1001)
-   {
-     /* Enable the Flash prefetch */
-     __HAL_FLASH_PREFETCH_BUFFER_ENABLE();
-   }
+  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+
+  /** Configure the main internal regulator output voltage 
+  */
+  __HAL_RCC_PWR_CLK_ENABLE();
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+  /** Initializes the CPU, AHB and APB busses clocks 
+  */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLM = 6;
+  RCC_OscInitStruct.PLL.PLLN = 168;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+  RCC_OscInitStruct.PLL.PLLQ = 7;
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Initializes the CPU, AHB and APB busses clocks 
+  */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
+  {
+    Error_Handler();
+  }
 }
 
+/**
+  * @brief I2C1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C1_Init(void)
+{
+
+  /* USER CODE BEGIN I2C1_Init 0 */
+
+  /* USER CODE END I2C1_Init 0 */
+
+  /* USER CODE BEGIN I2C1_Init 1 */
+
+  /* USER CODE END I2C1_Init 1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.ClockSpeed = 100000;
+  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C1_Init 2 */
+
+  /* USER CODE END I2C1_Init 2 */
+
+}
+
+/**
+  * @brief SDIO Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_SDIO_SD_Init(void)
+{
+
+  /* USER CODE BEGIN SDIO_Init 0 */
+
+  /* USER CODE END SDIO_Init 0 */
+
+  /* USER CODE BEGIN SDIO_Init 1 */
+
+  /* USER CODE END SDIO_Init 1 */
+  hsd.Instance = SDIO;
+  hsd.Init.ClockEdge = SDIO_CLOCK_EDGE_RISING;
+  hsd.Init.ClockBypass = SDIO_CLOCK_BYPASS_DISABLE;
+  hsd.Init.ClockPowerSave = SDIO_CLOCK_POWER_SAVE_DISABLE;
+  hsd.Init.BusWide = SDIO_BUS_WIDE_1B;
+  hsd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
+  hsd.Init.ClockDiv = 0;
+  /* USER CODE BEGIN SDIO_Init 2 */
+
+  /* USER CODE END SDIO_Init 2 */
+
+}
+
+/** 
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void) 
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA2_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA2_Stream3_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Stream3_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream3_IRQn);
+  /* DMA2_Stream6_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Stream6_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream6_IRQn);
+
+}
+
+/**
+  * @brief GPIO Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -218,21 +288,77 @@ static void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : PC0 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0;
+  /*Configure GPIO pin : LED_Pin */
+  GPIO_InitStruct.Pin = LED_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+  HAL_GPIO_Init(LED_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PB12 */
+  GPIO_InitStruct.Pin = GPIO_PIN_12;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 }
 
 /* USER CODE BEGIN 4 */
+
+// Read temperature from PCT2075
+uint16_t ReadPCTTemperature(uint8_t i2c_addr) {
+
+  HAL_StatusTypeDef ret;
+  uint8_t buf[2];
+  uint16_t val;
+
+  // Tell PCT2075 that we want to read from the temperature register
+  buf[0] = PCT_REG_TEMP;
+  ret = HAL_I2C_Master_Transmit(&hi2c1, PCT_I2C_ADDR, buf, 1, I2C_DELAY);
+
+  // If the I2C device has just been hot-plugged, reset the peripheral
+  if ( ret == HAL_BUSY ) {
+    if (HAL_I2C_DeInit(&hi2c1) != HAL_OK){
+      Error_Handler();
+    }
+    MX_I2C1_Init();
+  }
+
+  // Throw error if communication not OK
+  if ( ret != HAL_OK ) {
+    return PCT_ERROR;
+  }
+
+  // Read 2 bytes from the temperature register
+  ret = HAL_I2C_Master_Receive(&hi2c1, PCT_I2C_ADDR, buf, 2, I2C_DELAY);
+  if ( ret != HAL_OK ) {
+    return PCT_ERROR;
+  }
+
+  // Combine the bytes and return raw value
+  val = ((uint16_t)buf[0] << 3) | (buf[1] >> 5);
+
+  return val;
+}
+
+
+
+// Blink onboard LED
+void BlinkLED(uint32_t blink_delay, uint8_t num_blinks) {
+  for ( int i = 0; i < num_blinks; i++ ) {
+    HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
+    HAL_Delay(blink_delay);
+    HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+    HAL_Delay(blink_delay);
+  }
+}
 
 /* USER CODE END 4 */
 
@@ -257,7 +383,7 @@ void Error_Handler(void)
   * @retval None
   */
 void assert_failed(uint8_t *file, uint32_t line)
-{
+{ 
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */

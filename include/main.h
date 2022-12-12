@@ -40,6 +40,10 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+typedef enum {
+  I2C_HAPPY,
+  USB_CDC_HAPPY,
+} dbg_msg_t;
 
 /* USER CODE END ET */
 

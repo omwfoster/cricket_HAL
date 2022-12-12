@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include "main.h"
 #include "usb_device.h"
+#include "usbd_cdc_if.h"
 
 
 /* Private includes ----------------------------------------------------------*/
@@ -60,6 +61,14 @@ static const uint8_t PCT_I2C_ADDR = 0x37 << 1;  // Use 8-bit address
 static const uint8_t PCT_REG_TEMP = 0x00;       // Temperature register
 static const uint16_t PCT_ERROR = 0xFFFF;        // I2C/PCT error code
 /* USER CODE END PV */
+
+
+
+
+
+const char  * dbg_msg[] = {"I2C_HAPPY","USB_CDC_HAPPY"};
+
+
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
@@ -120,17 +129,6 @@ int main(void)
   while (1)
   {
 
-   
-
-     
-
-      // Convert to float temperature value (Celsius)
-      
-
-     
-
-      // Print temperature to console
-      
 
       // Turn LED on while writing to file
       HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
@@ -138,10 +136,9 @@ int main(void)
       HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 
       // If error writing to card, blink 3 times
-      
+       
         BlinkLED(200, 3);
-      
-    
+        CDC_Transmit_FS((uint8_t *)dbg_msg[I2C_HAPPY],10);
 
     // Wait before sampling again
     HAL_Delay(1000);

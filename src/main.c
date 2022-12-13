@@ -41,6 +41,8 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
+const char  * dbg_msg[] = {"I2C_HAPPY","USB_CDC_HAPPY"};
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -66,7 +68,7 @@ static const uint16_t PCT_ERROR = 0xFFFF;        // I2C/PCT error code
 
 
 
-const char  * dbg_msg[] = {"I2C_HAPPY","USB_CDC_HAPPY"};
+
 
 
 
@@ -119,6 +121,7 @@ int main(void)
   MX_DMA_Init();
   MX_SDIO_SD_Init();
   MX_USB_DEVICE_Init();
+  
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
 
@@ -138,10 +141,12 @@ int main(void)
       // If error writing to card, blink 3 times
        
         BlinkLED(200, 3);
-        CDC_Transmit_FS((uint8_t *)dbg_msg[I2C_HAPPY],10);
-
+        DEBUG_MSG(USB_CDC_HAPPY);
+        DEBUG_MSG(I2C_HAPPY);
+       
+        
     // Wait before sampling again
-    HAL_Delay(1000);
+    //HAL_Delay(1000);
 
     /* USER CODE END WHILE */
 
@@ -221,6 +226,7 @@ static void MX_I2C1_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN I2C1_Init 2 */
+  DEBUG_MSG(I2C_HAPPY);
 
   /* USER CODE END I2C1_Init 2 */
 

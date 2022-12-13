@@ -45,6 +45,9 @@ typedef enum {
   USB_CDC_HAPPY,
 } dbg_msg_t;
 
+extern const char  * dbg_msg[];
+
+#define DEBUG_MSG(X)  CDC_Transmit_FS((uint8_t *)dbg_msg[X],sizeof(dbg_msg[X]));
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/

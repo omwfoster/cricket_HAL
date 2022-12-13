@@ -1,21 +1,21 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
-  * All rights reserved.</center></h2>
-  *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                        opensource.org/licenses/BSD-3-Clause
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file           : main.c
+ * @brief          : Main program body
+ ******************************************************************************
+ * @attention
+ *
+ * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
+ * All rights reserved.</center></h2>
+ *
+ * This software component is licensed by ST under BSD 3-Clause license,
+ * the "License"; You may not use this file except in compliance with the
+ * License. You may obtain a copy of the License at:
+ *                        opensource.org/licenses/BSD-3-Clause
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
@@ -25,11 +25,10 @@
 #include "main.h"
 #include "usb_device.h"
 #include "usbd_cdc_if.h"
-
+#include "debug_print.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
 
 /* USER CODE END Includes */
 
@@ -40,8 +39,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
-const char  * dbg_msg[] = {"I2C_HAPPY","USB_CDC_HAPPY"};
 
 /* USER CODE END PD */
 
@@ -58,19 +55,11 @@ DMA_HandleTypeDef hdma_sdio_rx;
 DMA_HandleTypeDef hdma_sdio_tx;
 
 /* USER CODE BEGIN PV */
-static const uint32_t I2C_DELAY = 1000;         // Time (ms) to wait for I2C
-static const uint8_t PCT_I2C_ADDR = 0x37 << 1;  // Use 8-bit address
-static const uint8_t PCT_REG_TEMP = 0x00;       // Temperature register
-static const uint16_t PCT_ERROR = 0xFFFF;        // I2C/PCT error code
+static const uint32_t I2C_DELAY = 1000;        // Time (ms) to wait for I2C
+static const uint8_t PCT_I2C_ADDR = 0x37 << 1; // Use 8-bit address
+static const uint8_t PCT_REG_TEMP = 0x00;      // Temperature register
+static const uint16_t PCT_ERROR = 0xFFFF;      // I2C/PCT error code
 /* USER CODE END PV */
-
-
-
-
-
-
-
-
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
@@ -89,16 +78,14 @@ void BlinkLED(uint32_t blink_delay, uint8_t num_blinks);
 /* USER CODE END 0 */
 
 /**
-  * @brief  The application entry point.
-  * @retval int
-  */
+ * @brief  The application entry point.
+ * @retval int
+ */
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-  
- 
+
   /* USER CODE END 1 */
-  
 
   /* MCU Configuration--------------------------------------------------------*/
 
@@ -121,7 +108,7 @@ int main(void)
   MX_DMA_Init();
   MX_SDIO_SD_Init();
   MX_USB_DEVICE_Init();
-  
+
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
 
@@ -132,21 +119,21 @@ int main(void)
   while (1)
   {
 
+    // Turn LED on while writing to file
+    HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 
-      // Turn LED on while writing to file
-      HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-      
-      HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 
-      // If error writing to card, blink 3 times
-       
-        BlinkLED(200, 3);
-        DEBUG_MSG(USB_CDC_HAPPY);
-        DEBUG_MSG(I2C_HAPPY);
-       
-        
+    // If error writing to card, blink 3 times
+    DBG_PRINTF_DEBUG("Debug");
+    DBG_PRINTF_TRACE("Trace");
+    DBG_PRINTF_WARNING("Warning");
+    DBG_PRINTF_ERROR("Error");
+
+    BlinkLED(200, 3);
+
     // Wait before sampling again
-    //HAL_Delay(1000);
+    // HAL_Delay(1000);
 
     /* USER CODE END WHILE */
 
@@ -156,20 +143,20 @@ int main(void)
 }
 
 /**
-  * @brief System Clock Configuration
-  * @retval None
-  */
+ * @brief System Clock Configuration
+ * @retval None
+ */
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-  /** Configure the main internal regulator output voltage 
-  */
+  /** Configure the main internal regulator output voltage
+   */
   __HAL_RCC_PWR_CLK_ENABLE();
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-  /** Initializes the CPU, AHB and APB busses clocks 
-  */
+  /** Initializes the CPU, AHB and APB busses clocks
+   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
@@ -182,10 +169,9 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  /** Initializes the CPU, AHB and APB busses clocks 
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  /** Initializes the CPU, AHB and APB busses clocks
+   */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
@@ -198,10 +184,10 @@ void SystemClock_Config(void)
 }
 
 /**
-  * @brief I2C1 Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief I2C1 Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_I2C1_Init(void)
 {
 
@@ -226,17 +212,15 @@ static void MX_I2C1_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN I2C1_Init 2 */
-  DEBUG_MSG(I2C_HAPPY);
 
   /* USER CODE END I2C1_Init 2 */
-
 }
 
 /**
-  * @brief SDIO Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief SDIO Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_SDIO_SD_Init(void)
 {
 
@@ -257,13 +241,12 @@ static void MX_SDIO_SD_Init(void)
   /* USER CODE BEGIN SDIO_Init 2 */
 
   /* USER CODE END SDIO_Init 2 */
-
 }
 
-/** 
-  * Enable DMA controller clock
-  */
-static void MX_DMA_Init(void) 
+/**
+ * Enable DMA controller clock
+ */
+static void MX_DMA_Init(void)
 {
 
   /* DMA controller clock enable */
@@ -276,14 +259,13 @@ static void MX_DMA_Init(void)
   /* DMA2_Stream6_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream6_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream6_IRQn);
-
 }
 
 /**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief GPIO Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -310,13 +292,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
 }
 
 /* USER CODE BEGIN 4 */
 
 // Read temperature from PCT2075
-uint16_t ReadPCTTemperature(uint8_t i2c_addr) {
+uint16_t ReadPCTTemperature(uint8_t i2c_addr)
+{
 
   HAL_StatusTypeDef ret;
   uint8_t buf[2];
@@ -327,21 +309,25 @@ uint16_t ReadPCTTemperature(uint8_t i2c_addr) {
   ret = HAL_I2C_Master_Transmit(&hi2c1, PCT_I2C_ADDR, buf, 1, I2C_DELAY);
 
   // If the I2C device has just been hot-plugged, reset the peripheral
-  if ( ret == HAL_BUSY ) {
-    if (HAL_I2C_DeInit(&hi2c1) != HAL_OK){
+  if (ret == HAL_BUSY)
+  {
+    if (HAL_I2C_DeInit(&hi2c1) != HAL_OK)
+    {
       Error_Handler();
     }
     MX_I2C1_Init();
   }
 
   // Throw error if communication not OK
-  if ( ret != HAL_OK ) {
+  if (ret != HAL_OK)
+  {
     return PCT_ERROR;
   }
 
   // Read 2 bytes from the temperature register
   ret = HAL_I2C_Master_Receive(&hi2c1, PCT_I2C_ADDR, buf, 2, I2C_DELAY);
-  if ( ret != HAL_OK ) {
+  if (ret != HAL_OK)
+  {
     return PCT_ERROR;
   }
 
@@ -351,11 +337,11 @@ uint16_t ReadPCTTemperature(uint8_t i2c_addr) {
   return val;
 }
 
-
-
 // Blink onboard LED
-void BlinkLED(uint32_t blink_delay, uint8_t num_blinks) {
-  for ( int i = 0; i < num_blinks; i++ ) {
+void BlinkLED(uint32_t blink_delay, uint8_t num_blinks)
+{
+  for (int i = 0; i < num_blinks; i++)
+  {
     HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
     HAL_Delay(blink_delay);
     HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
@@ -363,12 +349,18 @@ void BlinkLED(uint32_t blink_delay, uint8_t num_blinks) {
   }
 }
 
+int debug_print_callback(char *debugMessage, unsigned int length)
+{
+
+  CDC_Transmit_FS((uint8_t *)debugMessage, length);
+}
+
 /* USER CODE END 4 */
 
 /**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
+ * @brief  This function is executed in case of error occurrence.
+ * @retval None
+ */
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
@@ -377,16 +369,16 @@ void Error_Handler(void)
   /* USER CODE END Error_Handler_Debug */
 }
 
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
-{ 
+{
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */

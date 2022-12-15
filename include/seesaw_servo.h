@@ -1,7 +1,9 @@
+#ifndef A4AA879A_C5B8_4C53_911D_D73B12639E8D
+#define A4AA879A_C5B8_4C53_911D_D73B12639E8D
 #ifndef _SEESAW_SERVO_H
 #define _SEESAW_SERVO_H
 
-#include "Adafruit_seesaw.hpp"
+#include "Adafruit_seesaw.h"
 
 /**************************************************************************/
 /*!
@@ -64,3 +66,6 @@ private:
 };
 
 #endif
+
+
+#endif /* A4AA879A_C5B8_4C53_911D_D73B12639E8D */

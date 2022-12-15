@@ -1,11 +1,7 @@
-
 #include "seesaw_servo.h"
 
 #define MIN_PULSE 3277
 #define MAX_PULSE 6554
-#define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
-#define map(a,b,c,d,e)(a<b);//todo: map macro required
-
 
 /**************************************************************************/
 /*!

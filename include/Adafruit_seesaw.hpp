@@ -2,9 +2,9 @@
 #define LIB_SEESAW_HPP
 
 #include <arm_math.h>
-#include "stm32f4xx.h"
-#include "stm32f4xx_hal.h"
-#include "omwof_packet.hpp"
+#include <stm32f4xx.h>
+#include <stm32f4xx_hal.h>
+
 
 #define byte uint8_t
 #define COUNTOF(__BUFFER__)   (sizeof(__BUFFER__) / sizeof(*(__BUFFER__)))

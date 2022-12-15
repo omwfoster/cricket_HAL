@@ -22,10 +22,13 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
-#include "main.h"
+#include <stdbool.h>
+#include "main.hpp"
 #include "usb_device.h"
 #include "usbd_cdc_if.h"
 #include "debug_print.h"
+#include "Adafruit_Crickit.hpp"
+
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -50,9 +53,7 @@
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
 
-SD_HandleTypeDef hsd;
-DMA_HandleTypeDef hdma_sdio_rx;
-DMA_HandleTypeDef hdma_sdio_tx;
+
 
 /* USER CODE BEGIN PV */
 static const uint32_t I2C_DELAY = 1000;        // Time (ms) to wait for I2C
@@ -65,10 +66,9 @@ static const uint16_t PCT_ERROR = 0xFFFF;      // I2C/PCT error code
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
-static void MX_SDIO_SD_Init(void);
 static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
-uint16_t ReadPCTTemperature(uint8_t i2c_addr);
+uint16_t read_crickit(uint8_t i2c_addr);
 void BlinkLED(uint32_t blink_delay, uint8_t num_blinks);
 /* USER CODE END PFP */
 
@@ -106,9 +106,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  MX_SDIO_SD_Init();
   MX_USB_DEVICE_Init();
-
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
 
@@ -216,32 +214,6 @@ static void MX_I2C1_Init(void)
   /* USER CODE END I2C1_Init 2 */
 }
 
-/**
- * @brief SDIO Initialization Function
- * @param None
- * @retval None
- */
-static void MX_SDIO_SD_Init(void)
-{
-
-  /* USER CODE BEGIN SDIO_Init 0 */
-
-  /* USER CODE END SDIO_Init 0 */
-
-  /* USER CODE BEGIN SDIO_Init 1 */
-
-  /* USER CODE END SDIO_Init 1 */
-  hsd.Instance = SDIO;
-  hsd.Init.ClockEdge = SDIO_CLOCK_EDGE_RISING;
-  hsd.Init.ClockBypass = SDIO_CLOCK_BYPASS_DISABLE;
-  hsd.Init.ClockPowerSave = SDIO_CLOCK_POWER_SAVE_DISABLE;
-  hsd.Init.BusWide = SDIO_BUS_WIDE_1B;
-  hsd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
-  hsd.Init.ClockDiv = 0;
-  /* USER CODE BEGIN SDIO_Init 2 */
-
-  /* USER CODE END SDIO_Init 2 */
-}
 
 /**
  * Enable DMA controller clock
@@ -296,8 +268,11 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-// Read temperature from PCT2075
-uint16_t ReadPCTTemperature(uint8_t i2c_addr)
+
+ 
+  
+
+uint16_t send_seesaw_cmd(uint8_t i2c_addr)
 {
 
   HAL_StatusTypeDef ret;
@@ -306,7 +281,7 @@ uint16_t ReadPCTTemperature(uint8_t i2c_addr)
 
   // Tell PCT2075 that we want to read from the temperature register
   buf[0] = PCT_REG_TEMP;
-  ret = HAL_I2C_Master_Transmit(&hi2c1, PCT_I2C_ADDR, buf, 1, I2C_DELAY);
+  ret = HAL_I2C_Master_Transmit(&hi2c1, SEESAW_ADDRESS, buf, 1, I2C_DELAY);
 
   // If the I2C device has just been hot-plugged, reset the peripheral
   if (ret == HAL_BUSY)
@@ -325,7 +300,7 @@ uint16_t ReadPCTTemperature(uint8_t i2c_addr)
   }
 
   // Read 2 bytes from the temperature register
-  ret = HAL_I2C_Master_Receive(&hi2c1, PCT_I2C_ADDR, buf, 2, I2C_DELAY);
+  ret = HAL_I2C_Master_Receive(&hi2c1, SEESAW_ADDRESS, buf, 2, I2C_DELAY);
   if (ret != HAL_OK)
   {
     return PCT_ERROR;
@@ -336,6 +311,7 @@ uint16_t ReadPCTTemperature(uint8_t i2c_addr)
 
   return val;
 }
+
 
 // Blink onboard LED
 void BlinkLED(uint32_t blink_delay, uint8_t num_blinks)
@@ -353,6 +329,7 @@ int debug_print_callback(char *debugMessage, unsigned int length)
 {
 
   CDC_Transmit_FS((uint8_t *)debugMessage, length);
+  return true;
 }
 
 /* USER CODE END 4 */

@@ -3,7 +3,7 @@
 #ifndef _SEESAW_SERVO_H
 #define _SEESAW_SERVO_H
 
-#include "Adafruit_seesaw.h"
+#include "Adafruit_seesaw.hpp"
 
 /**************************************************************************/
 /*!

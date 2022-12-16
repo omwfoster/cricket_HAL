@@ -60,6 +60,7 @@ static const uint32_t I2C_DELAY = 1000;        // Time (ms) to wait for I2C
 static const uint8_t PCT_I2C_ADDR = 0x37 << 1; // Use 8-bit address
 static const uint8_t PCT_REG_TEMP = 0x00;      // Temperature register
 static const uint16_t PCT_ERROR = 0xFFFF;      // I2C/PCT error code
+Adafruit_Crickit * crick1;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -70,6 +71,7 @@ static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
 uint16_t read_crickit(uint8_t i2c_addr);
 void BlinkLED(uint32_t blink_delay, uint8_t num_blinks);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -108,6 +110,7 @@ int main(void)
   MX_DMA_Init();
   MX_USB_DEVICE_Init();
   MX_I2C1_Init();
+  crick1 = new Adafruit_Crickit(&hi2c1);
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */

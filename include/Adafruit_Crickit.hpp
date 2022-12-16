@@ -49,7 +49,7 @@
 /**************************************************************************/
 class Adafruit_Crickit : public Adafruit_seesaw {
 public:
-  explicit Adafruit_Crickit(I2C_HandleTypeDef * x) : Adafruit_seesaw(I2C_HandleTypeDef ) { }
+  Adafruit_Crickit(){};
   ~Adafruit_Crickit(){};
 
   void analogWrite(uint8_t pin, uint16_t value, uint8_t width = 8);

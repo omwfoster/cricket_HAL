@@ -1,4 +1,5 @@
 #include "seesaw_servo.h"
+#include "omwof_helper.h"
 
 #define MIN_PULSE 3277
 #define MAX_PULSE 6554
@@ -62,8 +63,8 @@ uint8_t seesaw_Servo::attach(int pin, int min, int max) {
 void seesaw_Servo::write(int value) {
   if (value < 200) {
     // angle
-    uint16_t val = map(value, 0, 180, min, max);
-    val = constrain(val, min, max);
+    uint16_t val = MAP(value, 0, 180, min, max);
+    val = Constrain(val, min, max);
     _ss->analogWrite(_pin, val);
     _sval = val;
   } else
@@ -76,7 +77,7 @@ void seesaw_Servo::write(int value) {
     @returns  current pulse width as an angle between 0 and 180 degrees
 */
 /**************************************************************************/
-int seesaw_Servo::read() { return map(_sval, MIN_PULSE, MAX_PULSE, 0, 180); }
+int seesaw_Servo::read() { return MAP(_sval, MIN_PULSE, MAX_PULSE, 0, 180); }
 
 /**************************************************************************/
 /*!

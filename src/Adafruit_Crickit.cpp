@@ -1,4 +1,5 @@
 #include "Adafruit_Crickit.hpp"
+#include "debug_print.h"
 
 
 // the pwm pins
@@ -31,6 +32,7 @@ void Adafruit_Crickit::analogWrite(uint8_t pin, uint16_t value, uint8_t width) {
     uint8_t cmd[] = {(uint8_t)p, (uint8_t)(value >> 8), (uint8_t)value};
     this->write(SEESAW_TIMER_BASE, SEESAW_TIMER_PWM, cmd, 3);
   }
+  DBG_PRINTF_TRACE("analogue write");
 }
 
 uint16_t Adafruit_Crickit::analogRead(uint8_t pin) {

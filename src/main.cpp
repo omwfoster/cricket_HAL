@@ -110,6 +110,7 @@ int main(void)
   MX_DMA_Init();
   MX_USB_DEVICE_Init();
   MX_I2C1_Init();
+  DBG_PRINTF_TRACE("create cricket");
   crick1 = new Adafruit_Crickit(&hi2c1);
   /* USER CODE BEGIN 2 */
 

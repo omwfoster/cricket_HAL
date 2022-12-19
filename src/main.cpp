@@ -29,7 +29,6 @@
 #include "debug_print.h"
 #include "Adafruit_Crickit.hpp"
 
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -53,14 +52,12 @@
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
 
-
-
 /* USER CODE BEGIN PV */
 static const uint32_t I2C_DELAY = 1000;        // Time (ms) to wait for I2C
 static const uint8_t PCT_I2C_ADDR = 0x37 << 1; // Use 8-bit address
 static const uint8_t PCT_REG_TEMP = 0x00;      // Temperature register
 static const uint16_t PCT_ERROR = 0xFFFF;      // I2C/PCT error code
-Adafruit_Crickit * crick1;
+Adafruit_Crickit *crick1;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -69,7 +66,6 @@ static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
-
 
 void BlinkLED(uint32_t blink_delay, uint8_t num_blinks);
 
@@ -108,12 +104,14 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  //MX_DMA_Init();
+  // MX_DMA_Init();
   MX_USB_DEVICE_Init();
-  //MX_I2C1_Init();
-  
- // crick1 = new Adafruit_Crickit(&hi2c1);
+  HAL_Delay(3000);
+  MX_I2C1_Init();
+
+  // crick1 = new Adafruit_Crickit(&hi2c1);
   /* USER CODE BEGIN 2 */
+
  
 
   /* USER CODE END 2 */
@@ -129,15 +127,15 @@ int main(void)
     HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 
     // If error writing to card, blink 3 times
-    //DBG_PRINTF_DEBUG("Debug");
-    //DBG_PRINTF_TRACE("Trace");
-    //DBG_PRINTF_WARNING("Warning");
-    //DBG_PRINTF_ERROR("Error");
 
     BlinkLED(200, 3);
+    DBG_PRINTF_DEBUG("Debug");
+    DBG_PRINTF_TRACE("Trace");
+    DBG_PRINTF_WARNING("Warning");
+    DBG_PRINTF_ERROR("Error");
 
     // Wait before sampling again
-     HAL_Delay(1000);
+    HAL_Delay(1000);
 
     /* USER CODE END WHILE */
 
@@ -213,13 +211,13 @@ static void MX_I2C1_Init(void)
   hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
   if (HAL_I2C_Init(&hi2c1) != HAL_OK)
   {
+    DBG_PRINTF_TRACE("i2c error");
     Error_Handler();
   }
   /* USER CODE BEGIN I2C1_Init 2 */
-
+  DBG_PRINTF_TRACE("i2c success");
   /* USER CODE END I2C1_Init 2 */
 }
-
 
 /**
  * Enable DMA controller clock
@@ -274,10 +272,6 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-
- 
-  
-
 uint16_t send_seesaw_cmd(uint8_t i2c_addr)
 {
 
@@ -317,7 +311,6 @@ uint16_t send_seesaw_cmd(uint8_t i2c_addr)
 
   return val;
 }
-
 
 // Blink onboard LED
 void BlinkLED(uint32_t blink_delay, uint8_t num_blinks)

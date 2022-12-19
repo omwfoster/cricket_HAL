@@ -69,7 +69,8 @@ static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
-uint16_t read_crickit(uint8_t i2c_addr);
+
+
 void BlinkLED(uint32_t blink_delay, uint8_t num_blinks);
 
 /* USER CODE END PFP */
@@ -107,12 +108,13 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_DMA_Init();
+  //MX_DMA_Init();
   MX_USB_DEVICE_Init();
-  MX_I2C1_Init();
-  DBG_PRINTF_TRACE("create cricket");
-  crick1 = new Adafruit_Crickit(&hi2c1);
+  //MX_I2C1_Init();
+  
+ // crick1 = new Adafruit_Crickit(&hi2c1);
   /* USER CODE BEGIN 2 */
+ 
 
   /* USER CODE END 2 */
 
@@ -127,15 +129,15 @@ int main(void)
     HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 
     // If error writing to card, blink 3 times
-    DBG_PRINTF_DEBUG("Debug");
-    DBG_PRINTF_TRACE("Trace");
-    DBG_PRINTF_WARNING("Warning");
-    DBG_PRINTF_ERROR("Error");
+    //DBG_PRINTF_DEBUG("Debug");
+    //DBG_PRINTF_TRACE("Trace");
+    //DBG_PRINTF_WARNING("Warning");
+    //DBG_PRINTF_ERROR("Error");
 
     BlinkLED(200, 3);
 
     // Wait before sampling again
-    // HAL_Delay(1000);
+     HAL_Delay(1000);
 
     /* USER CODE END WHILE */
 

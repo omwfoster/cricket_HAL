@@ -28,6 +28,7 @@
 #include "usbd_cdc_if.h"
 #include "debug_print.h"
 #include "Adafruit_Crickit.hpp"
+//#include "seesaw_neopixel.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -108,6 +109,7 @@ int main(void)
   MX_USB_DEVICE_Init();
   HAL_Delay(3000);
   MX_I2C1_Init();
+  crick1 = new Adafruit_Crickit(&hi2c1);
 
   // crick1 = new Adafruit_Crickit(&hi2c1);
   /* USER CODE BEGIN 2 */
@@ -133,7 +135,8 @@ int main(void)
     DBG_PRINTF_TRACE("Trace");
     DBG_PRINTF_WARNING("Warning");
     DBG_PRINTF_ERROR("Error");
-
+    crick1->digitalWrite(CRICKIT_SIGNAL1,0);
+    
     // Wait before sampling again
     HAL_Delay(1000);
 

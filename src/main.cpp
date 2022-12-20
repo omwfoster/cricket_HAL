@@ -28,7 +28,7 @@
 #include "usbd_cdc_if.h"
 #include "debug_print.h"
 #include "Adafruit_Crickit.hpp"
-//#include "seesaw_neopixel.h"
+#include "seesaw_neopixel.hpp"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -58,7 +58,8 @@ static const uint32_t I2C_DELAY = 1000;        // Time (ms) to wait for I2C
 static const uint8_t PCT_I2C_ADDR = 0x37 << 1; // Use 8-bit address
 static const uint8_t PCT_REG_TEMP = 0x00;      // Temperature register
 static const uint16_t PCT_ERROR = 0xFFFF;      // I2C/PCT error code
-Adafruit_Crickit *crick1;
+Adafruit_Crickit * crick1;
+seesaw_NeoPixel * neopix1;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -110,6 +111,12 @@ int main(void)
   HAL_Delay(3000);
   MX_I2C1_Init();
   crick1 = new Adafruit_Crickit(&hi2c1);
+  neopix1 = new seesaw_NeoPixel(&hi2c1);
+  if(hi2c1.State==HAL_I2C_STATE_READY)
+  {
+    neopix1->Color(10,10,10);
+    neopix1->show();
+  }
 
   // crick1 = new Adafruit_Crickit(&hi2c1);
   /* USER CODE BEGIN 2 */

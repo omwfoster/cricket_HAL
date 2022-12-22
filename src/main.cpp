@@ -58,8 +58,8 @@ static const uint32_t I2C_DELAY = 1000;        // Time (ms) to wait for I2C
 static const uint8_t PCT_I2C_ADDR = 0x37 << 1; // Use 8-bit address
 static const uint8_t PCT_REG_TEMP = 0x00;      // Temperature register
 static const uint16_t PCT_ERROR = 0xFFFF;      // I2C/PCT error code
-Adafruit_Crickit * crick1;
-seesaw_NeoPixel * neopix1;
+Adafruit_Crickit *crick1;
+seesaw_NeoPixel *neopix1;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -111,17 +111,10 @@ int main(void)
   HAL_Delay(3000);
   MX_I2C1_Init();
   crick1 = new Adafruit_Crickit(&hi2c1);
-  neopix1 = new seesaw_NeoPixel(&hi2c1);
-  if(hi2c1.State==HAL_I2C_STATE_READY)
-  {
-    neopix1->Color(10,10,10);
-    neopix1->show();
-  }
+  neopix1 = new seesaw_NeoPixel(1, 1, NEO_GRB + NEO_KHZ800, &hi2c1);
 
   // crick1 = new Adafruit_Crickit(&hi2c1);
   /* USER CODE BEGIN 2 */
-
- 
 
   /* USER CODE END 2 */
 
@@ -138,12 +131,25 @@ int main(void)
     // If error writing to card, blink 3 times
 
     BlinkLED(200, 3);
-    DBG_PRINTF_DEBUG("Debug");
-    DBG_PRINTF_TRACE("Trace");
-    DBG_PRINTF_WARNING("Warning");
-    DBG_PRINTF_ERROR("Error");
-    crick1->digitalWrite(CRICKIT_SIGNAL1,0);
-    
+    DBG_PRINTF_DEBUG("loop");
+
+    crick1->digitalWrite(CRICKIT_SIGNAL1, 0);
+
+    if (hi2c1.State == HAL_I2C_STATE_READY)
+    {
+      neopix1->Color(10, 10, 10);
+      neopix1->show();
+      DBG_PRINTF_DEBUG("pixel");
+    }
+    else
+    {
+      DBG_PRINTF_DEBUG("i2c not ready");
+      if (HAL_I2C_GetError(&hi2c1) == HAL_I2C_ERROR_AF)
+      {
+        DBG_PRINTF_DEBUG("nack i2c");
+      }
+    }
+
     // Wait before sampling again
     HAL_Delay(1000);
 

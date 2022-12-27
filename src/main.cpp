@@ -44,18 +44,9 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-// GPIO and I2C Peripheral (I2C3 Configuration)
-#define I2Cx I2C1                                    // Selected I2C peripheral
-#define RCC_APB1Periph_I2Cx RCC_APB1Periph_I2C1      // Bus where the peripheral is connected
-#define RCC_AHB1Periph_GPIO_SCL RCC_AHB1Periph_GPIOA // Bus for GPIO Port of SCL
-#define RCC_AHB1Periph_GPIO_SDA RCC_AHB1Periph_GPIOC // Bus for GPIO Port of SDA
-#define GPIO_AF_I2Cx GPIO_AF4_I2C1                   // Alternate function for GPIO pins
-#define GPIO_SCL GPIOA
-#define GPIO_SDA GPIOC
-#define GPIO_Pin_SCL GPIO_Pin_8
-#define GPIO_Pin_SDA GPIO_Pin_9
-#define GPIO_PinSource_SCL GPIO_PinSource8
-#define GPIO_PinSource_SDA GPIO_PinSource9
+
+
+
 
 /* USER CODE END PD */
 

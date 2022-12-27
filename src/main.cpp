@@ -30,6 +30,7 @@
 #include "Adafruit_Crickit.hpp"
 #include "seesaw_neopixel.hpp"
 
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -42,6 +43,19 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
+// GPIO and I2C Peripheral (I2C3 Configuration)
+#define I2Cx I2C1                                    // Selected I2C peripheral
+#define RCC_APB1Periph_I2Cx RCC_APB1Periph_I2C1      // Bus where the peripheral is connected
+#define RCC_AHB1Periph_GPIO_SCL RCC_AHB1Periph_GPIOA // Bus for GPIO Port of SCL
+#define RCC_AHB1Periph_GPIO_SDA RCC_AHB1Periph_GPIOC // Bus for GPIO Port of SDA
+#define GPIO_AF_I2Cx GPIO_AF4_I2C1                   // Alternate function for GPIO pins
+#define GPIO_SCL GPIOA
+#define GPIO_SDA GPIOC
+#define GPIO_Pin_SCL GPIO_Pin_8
+#define GPIO_Pin_SDA GPIO_Pin_9
+#define GPIO_PinSource_SCL GPIO_PinSource8
+#define GPIO_PinSource_SDA GPIO_PinSource9
 
 /* USER CODE END PD */
 
@@ -135,10 +149,13 @@ int main(void)
 
     crick1->digitalWrite(CRICKIT_SIGNAL1, 0);
 
+    HAL_Delay(500);
+
     if (hi2c1.State == HAL_I2C_STATE_READY)
     {
       neopix1->Color(10, 10, 10);
       neopix1->show();
+
       DBG_PRINTF_DEBUG("pixel");
     }
     else
@@ -279,10 +296,17 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LED_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PB12 */
+  /*Configure GPIO pin : PB12 -- REQUIRED FOR CDC USB */
   GPIO_InitStruct.Pin = GPIO_PIN_12;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  GPIO_InitStruct.Pin = GPIO_PIN_6 | GPIO_PIN_7;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.Alternate = GPIO_AF4_I2C1;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 }
 

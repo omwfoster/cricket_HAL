@@ -138,11 +138,11 @@ int main(void)
 
     
 
-    HAL_Delay(500);
+    HAL_Delay(100);
 
     if (!(hi2c1.State == HAL_I2C_STATE_BUSY))
     {
-      neopix1->Color(10, 10, 10);
+      neopix1->setPixelColor(1,neopix1->Color(10, 10, 10));
       neopix1->show();
 
       DBG_PRINTF_DEBUG("pixel");
@@ -157,7 +157,7 @@ int main(void)
     }
 
     // Wait before sampling again
-    HAL_Delay(1000);
+    HAL_Delay(100);
 
     /* USER CODE END WHILE */
 

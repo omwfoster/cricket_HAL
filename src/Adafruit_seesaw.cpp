@@ -936,5 +936,7 @@ size_t Adafruit_seesaw::write(const char *str)
 
 void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *I2cHandle)
 {
+DBG_PRINTF_DEBUG("I to the C callbackery");
+  
 }
 

@@ -70,7 +70,7 @@ seesaw_NeoPixel *neopix1;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_DMA_Init(void);
+
 static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
 
@@ -111,12 +111,13 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  // MX_DMA_Init();
+ 
   MX_USB_DEVICE_Init();
   HAL_Delay(3000);
   MX_I2C1_Init();
   crick1 = new Adafruit_Crickit(&hi2c1);
-  neopix1 = new seesaw_NeoPixel(1, 1, NEO_GRB + NEO_KHZ800, &hi2c1);
+  //crick1->begin();
+  //neopix1 = new seesaw_NeoPixel(1, 1, NEO_GRB + NEO_KHZ800, &hi2c1);
 
   // crick1 = new Adafruit_Crickit(&hi2c1);
   /* USER CODE BEGIN 2 */
@@ -128,21 +129,18 @@ int main(void)
   while (1)
   {
 
-    // Turn LED on while writing to file
-    HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 
-    HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 
     // If error writing to card, blink 3 times
 
     BlinkLED(200, 3);
     DBG_PRINTF_DEBUG("loop");
 
-    crick1->digitalWrite(CRICKIT_SIGNAL1, 0);
+    
 
     HAL_Delay(500);
 
-    if (hi2c1.State == HAL_I2C_STATE_READY)
+    if (!(hi2c1.State == HAL_I2C_STATE_BUSY))
     {
       neopix1->Color(10, 10, 10);
       neopix1->show();
@@ -152,7 +150,7 @@ int main(void)
     else
     {
       DBG_PRINTF_DEBUG("i2c not ready");
-      if (HAL_I2C_GetError(&hi2c1) == HAL_I2C_ERROR_AF)
+      if (HAL_I2C_GetError(&hi2c1))
       {
         DBG_PRINTF_DEBUG("nack i2c");
       }
@@ -227,7 +225,7 @@ static void MX_I2C1_Init(void)
   hi2c1.Instance = I2C1;
   hi2c1.Init.ClockSpeed = 100000;
   hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
-  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.OwnAddress1 = 46;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
   hi2c1.Init.OwnAddress2 = 0;
@@ -243,23 +241,8 @@ static void MX_I2C1_Init(void)
   /* USER CODE END I2C1_Init 2 */
 }
 
-/**
- * Enable DMA controller clock
- */
-static void MX_DMA_Init(void)
-{
 
-  /* DMA controller clock enable */
-  __HAL_RCC_DMA2_CLK_ENABLE();
 
-  /* DMA interrupt init */
-  /* DMA2_Stream3_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream3_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA2_Stream3_IRQn);
-  /* DMA2_Stream6_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream6_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA2_Stream6_IRQn);
-}
 
 /**
  * @brief GPIO Initialization Function

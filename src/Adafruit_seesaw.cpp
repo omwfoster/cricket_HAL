@@ -804,7 +804,7 @@ bool Adafruit_seesaw::disableEncoderInterrupt(uint8_t encoder)
  ****************************************************************************************/
 bool Adafruit_seesaw::write8(byte regHigh, byte regLow, byte value)
 {
-  return this->write(regHigh, regLow, &value, 1);
+  return this->write(value);
 }
 
 /**
@@ -843,31 +843,22 @@ uint8_t Adafruit_seesaw::read8(byte regHigh, byte regLow, uint16_t delay)
  *  @returns    True on I2C read success
  ****************************************************************************************/
 bool Adafruit_seesaw::read(uint8_t regHigh, uint8_t regLow, uint8_t *buf,
-                           uint8_t num, uint16_t delay)
+                           uint16_t num, uint16_t delay)
 {
   uint8_t pos = 0;
   uint8_t prefix[2];
   prefix[0] = (uint8_t)regHigh;
   prefix[1] = (uint8_t)regLow;
 
-  // HAL_I2C_Master_Receive_DMA(this->hi2c,this->getI2CAddr,)
+  HAL_I2C_Master_Receive_DMA(this->hi2c,SEESAW_ADDRESS,buf,num);
 
 #ifdef SEESAW_I2C_DEBUG
-  Serial.print("Reading ");
-  Serial.print(read_now);
-  Serial.println(" bytes");
+  DBG_PRINTF_DEBUG("Reading ");
+  //DBG_PRINTF_DEBUG(num);
+  DBG_PRINTF_DEBUG(" bytes");
 #endif
 
-/*     if (!_i2c_dev->read(buf + pos, read_now)) {
-      return false;
-    }
-    pos += read_now; */
-#ifdef SEESAW_I2C_DEBUG
-  Serial.print("pos: ");
-  Serial.print(pos);
-  Serial.print(" num:");
-  Serial.println(num);
-#endif
+
 
   return true;
 }
@@ -889,8 +880,11 @@ uint8_t *aTxBuffer = &output_string[0];
 bool Adafruit_seesaw::write(uint8_t regHigh, uint8_t regLow,
                             uint8_t *buf = NULL, uint8_t num = 0)
 {
+  output_string[0] = regHigh;
+  output_string[1] = regLow;
+  memcpy(buf,&output_string[2],num);
 
-  HAL_I2C_Master_Transmit(this->hi2c, (uint16_t)SEESAW_ADDRESS, aTxBuffer, 8, 0);
+  HAL_I2C_Master_Transmit(this->hi2c, (uint16_t)SEESAW_ADDRESS, &output_string[0], num+2, 0);
 
   return true;
 }

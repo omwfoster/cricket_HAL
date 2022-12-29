@@ -116,8 +116,9 @@ int main(void)
   HAL_Delay(3000);
   MX_I2C1_Init();
   crick1 = new Adafruit_Crickit(&hi2c1);
+  
   //crick1->begin();
-  //neopix1 = new seesaw_NeoPixel(1, 1, NEO_GRB + NEO_KHZ800, &hi2c1);
+  //neopix1 = new seesaw_NeoPixel(1, 0x27, NEO_GRB + NEO_KHZ800, &hi2c1);
 
   // crick1 = new Adafruit_Crickit(&hi2c1);
   /* USER CODE BEGIN 2 */

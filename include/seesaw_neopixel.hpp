@@ -25,6 +25,7 @@
 #include <stdbool.h>
 #include <stm32f4xx.h>
 #include <stm32f4xx_hal.h>
+#include "debug_print.h"
 
 __STATIC_INLINE uint32_t micros(void){
 	return  DWT->CYCCNT / (SystemCoreClock / 1000000U);
@@ -134,11 +135,11 @@ protected:
       numBytes;     // Size of 'pixels' buffer below (3 or 4 bytes/pixel)
   int8_t pin;
   uint8_t brightness,
-      *pixels,      // Holds LED color values (3 or 4 bytes each)
-      rOffset,      // Index of red byte within each 3- or 4-byte pixel
-      gOffset,      // Index of green byte
-      bOffset,      // Index of blue byte
-      wOffset;      // Index of white byte (same as rOffset if no white)
+          *pixels,      // Holds LED color values (3 or 4 bytes each)
+          rOffset,      // Index of red byte within each 3- or 4-byte pixel
+          gOffset,      // Index of green byte
+          bOffset,      // Index of blue byte
+          wOffset;      // Index of white byte (same as rOffset if no white)
   uint32_t endTime; // Latch timing reference
 
   uint16_t type;

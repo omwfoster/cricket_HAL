@@ -88,8 +88,9 @@ bool Adafruit_seesaw::set_I2C(I2C_HandleTypeDef *hI2c)
  ****************************************************************************************/
 bool Adafruit_seesaw::begin(uint8_t addr, int8_t flow, bool reset)
 {
+  uint8_t ui = this->hi2c->Devaddress;
   this->hi2c->Devaddress = SEESAW_ADDRESS;
-  HAL_I2C_IsDeviceReady(this->hi2c, this->hi2c->Devaddress, 10, 0);
+  HAL_I2C_IsDeviceReady(this->hi2c, (ui<<1) , 10, 0);
   return true;
 }
 

@@ -30,7 +30,6 @@
 #include "Adafruit_Crickit.hpp"
 #include "seesaw_neopixel.hpp"
 
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -43,10 +42,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
-
-
-
 
 /* USER CODE END PD */
 
@@ -111,14 +106,21 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
- 
+
   MX_USB_DEVICE_Init();
   HAL_Delay(3000);
+  DBG_PRINTF_DEBUG("USB init");
+
   MX_I2C1_Init();
-  crick1 = new Adafruit_Crickit(&hi2c1);
-  
-  //crick1->begin();
-  //neopix1 = new seesaw_NeoPixel(1, 0x27, NEO_GRB + NEO_KHZ800, &hi2c1);
+   crick1 = new Adafruit_Crickit(&hi2c1);
+
+  BlinkLED(100, 3);
+   crick1->begin(0x49,-1,true);
+
+   neopix1 = new seesaw_NeoPixel(&hi2c1);
+  // neopix1->updateLength(1);
+  // neopix1->updateType(NEO_GRB + NEO_KHZ800 );
+  // neopix1->setPin((uint8_t(49)<<1));
 
   // crick1 = new Adafruit_Crickit(&hi2c1);
   /* USER CODE BEGIN 2 */
@@ -130,21 +132,17 @@ int main(void)
   while (1)
   {
 
-
-
     // If error writing to card, blink 3 times
 
     BlinkLED(200, 3);
     DBG_PRINTF_DEBUG("loop");
 
-    
-
     HAL_Delay(100);
 
     if (!(hi2c1.State == HAL_I2C_STATE_BUSY))
     {
-      neopix1->setPixelColor(1,neopix1->Color(10, 10, 10));
-      neopix1->show();
+      //  neopix1->setPixelColor(1,neopix1->Color(10, 10, 10));
+      //  neopix1->show();
 
       DBG_PRINTF_DEBUG("pixel");
     }
@@ -242,9 +240,6 @@ static void MX_I2C1_Init(void)
   /* USER CODE END I2C1_Init 2 */
 }
 
-
-
-
 /**
  * @brief GPIO Initialization Function
  * @param None
@@ -276,7 +271,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
 
   /* GPIO PB6/PB7 for i2c1 for seesaw communication*/
 

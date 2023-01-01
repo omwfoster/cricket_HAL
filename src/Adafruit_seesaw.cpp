@@ -42,7 +42,7 @@ Print::Print()
  ****************************************************************************************/
 Adafruit_seesaw::Adafruit_seesaw(I2C_HandleTypeDef *hI2c)
 {
-
+  DBG_PRINTF_TRACE("seesaw constructor");
   if ((hI2c->State) == HAL_I2C_STATE_READY)
   {
     HAL_I2C_EnableListen_IT(hI2c);
@@ -90,8 +90,17 @@ bool Adafruit_seesaw::begin(uint8_t addr, int8_t flow, bool reset)
 {
   uint8_t ui = this->hi2c->Devaddress;
   this->hi2c->Devaddress = SEESAW_ADDRESS;
-  HAL_I2C_IsDeviceReady(this->hi2c, (ui<<1) , 10, 0);
-  return true;
+  if(HAL_I2C_IsDeviceReady(this->hi2c, (ui<<1) , 10, 0))
+  {
+    
+    return true;
+  }
+  else{
+
+    DBG_PRINTF_TRACE("i2c not ready(begin)");
+    return false;
+  }
+  
 }
 
 /*!

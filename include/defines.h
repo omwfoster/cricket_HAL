@@ -34,15 +34,29 @@
 
 #define RX_BUFFER_SIZE   20
 
-/* Put your global defines for all libraries here used in your project */
+#define I2Cx                            I2C1
+#define I2Cx_CLK_ENABLE()               __HAL_RCC_I2C1_CLK_ENABLE()
+#define I2Cx_SDA_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOB_CLK_ENABLE()
+#define I2Cx_SCL_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOB_CLK_ENABLE() 
 
-/* Defines for RCC settings for system */
-/* I've added these defines in options for target in Keil uVision for each target different settings */
-//#define RCC_OSCILLATORTYPE    RCC_OSCILLATORTYPE_HSE /*!< Used to select system oscillator type */
-//#define RCC_PLLM              8                      /*!< Used for PLL M parameter */
-//#define RCC_PLLN              360                    /*!< Used for PLL N parameter */
-//#define RCC_PLLP              2                      /*!< Used for PLL P parameter */
-//#define RCC_PLLQ              7                      /*!< Used for PLL Q parameter */
-//#define RCC_PLLR              10                     /*!< Used for PLL R parameter, available on STM32F446xx */
+#define I2Cx_FORCE_RESET()              __HAL_RCC_I2C1_FORCE_RESET()
+#define I2Cx_RELEASE_RESET()            __HAL_RCC_I2C1_RELEASE_RESET()
 
+/* Definition for I2Cx Pins */
+#define I2Cx_SCL_PIN                    GPIO_PIN_6
+#define I2Cx_SCL_GPIO_PORT              GPIOB
+#define I2Cx_SDA_PIN                    GPIO_PIN_9
+#define I2Cx_SDA_GPIO_PORT              GPIOB
+#define I2Cx_SCL_SDA_AF                 GPIO_AF4_I2C1
+
+/* Definition for I2Cx's NVIC */
+#define I2Cx_EV_IRQn                    I2C1_EV_IRQn
+#define I2Cx_ER_IRQn                    I2C1_ER_IRQn
+#define I2Cx_EV_IRQHandler              I2C1_EV_IRQHandler
+#define I2Cx_ER_IRQHandler              I2C1_ER_IRQHandler
+
+/* Size of Transmission buffer */
+#define TXBUFFERSIZE                      (COUNTOF(aTxBuffer) - 1)
+/* Size of Reception buffer */
+#define RXBUFFERSIZE  
 #endif

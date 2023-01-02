@@ -112,7 +112,7 @@ int main(void)
   DBG_PRINTF_DEBUG("USB init");
 
   MX_I2C1_Init();
-   crick1 = new Adafruit_Crickit(&hi2c1);
+  crick1 = new Adafruit_Crickit(&hi2c1);
 
   BlinkLED(100, 3);
   crick1->begin(0x49,-1,true);

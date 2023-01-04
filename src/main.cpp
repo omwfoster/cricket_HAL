@@ -111,6 +111,8 @@ int main(void)
   HAL_Delay(3000);
   DBG_PRINTF_DEBUG("USB init");
 
+  
+  HAL_I2C_MspInit(&hi2c1);
   MX_I2C1_Init();
   crick1 = new Adafruit_Crickit(&hi2c1);
 

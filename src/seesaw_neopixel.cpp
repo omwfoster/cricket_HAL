@@ -58,9 +58,9 @@ seesaw_NeoPixel::~seesaw_NeoPixel()
     free(pixels);
 }
 
-bool seesaw_NeoPixel::begin(uint8_t addr,uint16_t type,uint16_t numLEDs,  int8_t flow)
+bool seesaw_NeoPixel::begin(uint8_t addr,uint16_t numLEDs,  int8_t flow)
 {
-  if (!Adafruit_seesaw::begin(addr, flow))
+  if (!Adafruit_seesaw::begin(addr, flow,numLEDs))
     return false;
 
   updateType(type);

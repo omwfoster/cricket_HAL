@@ -114,10 +114,16 @@ int main(void)
   
   HAL_I2C_MspInit(&hi2c1);
   MX_I2C1_Init();
-  crick1 = new Adafruit_Crickit(&hi2c1);
+  crick1 = new Adafruit_Crickit();
+  crick1->set_I2C(&hi2c1);
+  neopix1 = new seesaw_NeoPixel();
+  neopix1->set_I2C(&hi2c1);
+
+  
 
   BlinkLED(100, 3);
   crick1->begin(0x49,-1,true);
+  //neopix1->begin(0x49,-1);
 
   // neopix1 = new seesaw_NeoPixel(&hi2c1);
   // neopix1->updateLength(1);
@@ -143,8 +149,8 @@ int main(void)
 
     if (!(hi2c1.State == HAL_I2C_STATE_BUSY))
     {
-      //  neopix1->setPixelColor(1,neopix1->Color(10, 10, 10));
-      //  neopix1->show();
+        neopix1->setPixelColor(1,neopix1->Color(10, 10, 10));
+        neopix1->show();
 
       DBG_PRINTF_DEBUG("pixel");
     }
@@ -254,7 +260,6 @@ static void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
@@ -274,14 +279,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /* GPIO PB6/PB7 for i2c1 for seesaw communication*/
 
-  GPIO_InitStruct.Pin = GPIO_PIN_6 | GPIO_PIN_7;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-  GPIO_InitStruct.Alternate = GPIO_AF4_I2C1;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
 }
 
 /* USER CODE BEGIN 4 */

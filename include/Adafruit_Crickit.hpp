@@ -49,7 +49,8 @@
 /**************************************************************************/
 class Adafruit_Crickit : public Adafruit_seesaw {
 public:
-  using Adafruit_seesaw::Adafruit_seesaw;
+    Adafruit_Crickit(){};
+    ~Adafruit_Crickit(){};
  
 
   void analogWrite(uint8_t pin, uint16_t value, uint8_t width = 8);

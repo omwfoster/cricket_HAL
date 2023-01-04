@@ -32,8 +32,7 @@
 // Constructor when length, pin and type are known at compile-time:
 seesaw_NeoPixel::seesaw_NeoPixel(uint16_t n, uint8_t p, neoPixelType t,
                                  I2C_HandleTypeDef *x)
-    : Adafruit_seesaw(x), begun(false), numLEDs(n), pin(p), brightness(0),
-      pixels(NULL), endTime(0), type(t) {}
+    : Adafruit_seesaw(){}
 
 // via Michael Vogt/neophob: empty constructor is used when strand length
 // isn't known at compile-time; situations where program config might be
@@ -41,7 +40,7 @@ seesaw_NeoPixel::seesaw_NeoPixel(uint16_t n, uint8_t p, neoPixelType t,
 // command.  If using this constructor, MUST follow up with updateType(),
 // updateLength(), etc. to establish the strand type, length and pin number!
 seesaw_NeoPixel::seesaw_NeoPixel(I2C_HandleTypeDef *x)
-    : Adafruit_seesaw(x),
+    : Adafruit_seesaw(),
 #ifdef NEO_KHZ400
       is800KHz(true),
 #endif
@@ -59,7 +58,7 @@ seesaw_NeoPixel::~seesaw_NeoPixel()
     free(pixels);
 }
 
-bool seesaw_NeoPixel::begin(uint8_t addr, int8_t flow)
+bool seesaw_NeoPixel::begin(uint8_t addr,uint16_t type,uint16_t numLEDs,  int8_t flow)
 {
   if (!Adafruit_seesaw::begin(addr, flow))
     return false;

@@ -232,7 +232,7 @@ class Print
 class Adafruit_seesaw : public Print {
 public:
   // constructors
-  Adafruit_seesaw(I2C_HandleTypeDef * x);
+  Adafruit_seesaw();
   ~Adafruit_seesaw(void){};
 
   bool begin(uint8_t addr = SEESAW_ADDRESS, int8_t flow = -1,

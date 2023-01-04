@@ -40,13 +40,10 @@ Print::Print()
  *
  *  @param      i2c_bus the I2C bus connected to the seesaw, defaults to "Wire"
  ****************************************************************************************/
-Adafruit_seesaw::Adafruit_seesaw(I2C_HandleTypeDef *hI2c)
+Adafruit_seesaw::Adafruit_seesaw()
 {
   DBG_PRINTF_TRACE("seesaw constructor");
-  if ((hI2c->State) == HAL_I2C_STATE_READY)
-  {
-    HAL_I2C_EnableListen_IT(hI2c);
-  }
+
 }
 
 bool Adafruit_seesaw::set_I2C(I2C_HandleTypeDef *hI2c)
@@ -92,7 +89,7 @@ bool Adafruit_seesaw::begin(uint8_t addr, int8_t flow, bool reset)
   this->hi2c->Devaddress = SEESAW_ADDRESS;
   if(HAL_I2C_IsDeviceReady(this->hi2c, (ui<<1) , 10, 0))
   {
-    
+    DBG_PRINTF_TRACE("i2c ready(begin)");
     return true;
   }
   else{

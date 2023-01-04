@@ -114,7 +114,7 @@ public:
   seesaw_NeoPixel(I2C_HandleTypeDef * x = NULL);
   ~seesaw_NeoPixel();
 
-  bool begin(uint8_t addr = SEESAW_ADDRESS, int8_t flow = -1);
+  bool begin(uint8_t addr = SEESAW_ADDRESS,uint16_t type,uint16_t numLEDs, int8_t flow = -1);
   void show(void), setPin(uint8_t p),
       setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b),
       setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b, uint8_t w),

@@ -63,9 +63,9 @@ bool seesaw_NeoPixel::begin(uint8_t addr,uint16_t numLEDs,  int8_t flow)
   if (!Adafruit_seesaw::begin(addr, flow,numLEDs))
     return false;
 
-  updateType(type);
-  updateLength(numLEDs);
-  setPin(pin);
+  //updateType(type);
+  //updateLength(numLEDs);
+  //setPin(pin);
 
   return true;
 }

@@ -123,14 +123,7 @@ int main(void)
 
   BlinkLED(100, 3);
   crick1->begin(0x49,-1,true);
-  //neopix1->begin(0x49,-1);
 
-  // neopix1 = new seesaw_NeoPixel(&hi2c1);
-  // neopix1->updateLength(1);
-  // neopix1->updateType(NEO_GRB + NEO_KHZ800 );
-  // neopix1->setPin((uint8_t(49)<<1));
-
-  // crick1 = new Adafruit_Crickit(&hi2c1);
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */

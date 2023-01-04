@@ -123,7 +123,7 @@ int main(void)
 
   BlinkLED(100, 3);
   crick1->begin(0x49,-1,true);
-  neopix1->begin(0x49,-1,true);
+ // neopix1->begin(0x49,-1,true);
 
   /* USER CODE BEGIN 2 */
 

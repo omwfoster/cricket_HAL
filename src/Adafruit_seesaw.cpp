@@ -889,10 +889,18 @@ bool Adafruit_seesaw::write(uint8_t regHigh, uint8_t regLow,
 {
   output_string[0] = regHigh;
   output_string[1] = regLow;
+  // TODO : catch buffer overflow if(num< .........
+
+
+
+  DBG_PRINTF_TRACE("seesaw::write");     
+  
+
+
   memcpy(buf,&output_string[2],num);
 
   HAL_I2C_Master_Transmit(this->hi2c, (uint16_t)SEESAW_ADDRESS, &output_string[0], num+2, 0);
-
+  DBG_PRINTF_TRACE("HAL_I2C_Master_Transmit");
   return true;
 }
 

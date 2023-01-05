@@ -118,6 +118,7 @@ int main(void)
   crick1->set_I2C(&hi2c1);
   neopix1 = new seesaw_NeoPixel();
   neopix1->set_I2C(&hi2c1);
+  neopix1->updateLength(1);
 
   
 

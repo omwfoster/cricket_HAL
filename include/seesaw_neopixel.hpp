@@ -103,6 +103,13 @@ __STATIC_INLINE uint32_t micros(void){
 #define NEO_KHZ400 0x0100 // 400 KHz datastream
 
 typedef uint16_t neoPixelType;
+typedef union colour_RGBA
+{
+  byte bytes[4];
+  uint32_t RGBA32;
+
+}colour_RGBA;
+
 
 /** Adafruit_NeoPixel-compatible 'wrapper' for LED control over seesaw
  */

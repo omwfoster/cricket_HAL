@@ -63,9 +63,7 @@ bool seesaw_NeoPixel::begin(uint8_t addr,uint16_t numLEDs,  int8_t flow)
   if (!Adafruit_seesaw::begin(addr, flow,numLEDs))
     return false;
 
-  //updateType(type);
-  //updateLength(numLEDs);
-  //setPin(pin);
+  
 
   return true;
 }
@@ -126,8 +124,8 @@ void seesaw_NeoPixel::show(void)
   // subsequent round of data until the latch time has elapsed.  This
   // allows the mainline code to start generating the next frame of data
   // rather than stalling for the latch.
-  while (!canShow())
-    ;
+  //while (!canShow())
+  //  ;
     this->write(SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_SHOW, NULL, 0);
     endTime = micros(); // Save EOD time for latch on next call
     DBG_PRINTF_DEBUG("neopixel::write");
@@ -137,8 +135,13 @@ void seesaw_NeoPixel::show(void)
 // Set the output pin number
 void seesaw_NeoPixel::setPin(uint8_t p)
 {
+
+  DBG_PRINTF_DEBUG("neopixel::setpin pre");
   this->write8(SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_PIN, p);
-  pin = p;
+  DBG_PRINTF_DEBUG("neopixel::setpin post");
+  
+
+  
 }
 
 // Set pixel color from separate R,G,B components:
@@ -253,7 +256,7 @@ void seesaw_NeoPixel::setPixelColor(uint16_t n, uint32_t c)
     writeBuf[1] = offset;
     memcpy(&writeBuf[2], p, len);
 
-    this->write(SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_BUF, writeBuf, len + 2);
+   // this->write(SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_BUF, c, 3);
   }
 }
 

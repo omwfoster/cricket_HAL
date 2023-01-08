@@ -30,6 +30,7 @@
 #include "Adafruit_Crickit.hpp"
 #include "seesaw_neopixel.hpp"
 
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -125,6 +126,7 @@ int main(void)
   BlinkLED(100, 3);
   crick1->begin(0x49,-1,true);
   neopix1->begin(0x49,-1,true);
+  neopix1->setPin((uint8_t)27);
 
   /* USER CODE BEGIN 2 */
 
@@ -144,7 +146,7 @@ int main(void)
 
     if (!(hi2c1.State == HAL_I2C_STATE_BUSY))
     {
-        neopix1->setPixelColor(1,neopix1->Color(10, 10, 10));
+        neopix1->setPixelColor(1,neopix1->Color(123, 10, 10));
         neopix1->show();
 
       DBG_PRINTF_DEBUG("pixel");

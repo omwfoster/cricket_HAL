@@ -28,7 +28,7 @@
 #include "usbd_cdc_if.h"
 #include "debug_print.h"
 #include "Adafruit_Crickit.hpp"
-#include "seesaw_neopixel.hpp"
+#include "omwof_ss_neopix.hpp"
 
 
 /* Private includes ----------------------------------------------------------*/

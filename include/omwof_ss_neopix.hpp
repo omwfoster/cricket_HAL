@@ -19,7 +19,7 @@
 #ifndef SEESAW_NEOPIXEL_H
 #define SEESAW_NEOPIXEL_H
 
-#include "Adafruit_seesaw.hpp"
+#include "omwof_ss.hpp"
 #include <arm_math.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -103,12 +103,20 @@ __STATIC_INLINE uint32_t micros(void){
 #define NEO_KHZ400 0x0100 // 400 KHz datastream
 
 typedef uint16_t neoPixelType;
+
+typedef struct  colour{
+  uint8_t r;
+  uint8_t g;
+  uint8_t b;
+  uint8_t gamma;
+} __attribute__((packed, aligned(1))) RGBA8;
+
 typedef union colour_RGBA
 {
-  byte bytes[4];
+  RGBA8 rgba8;
   uint32_t RGBA32;
-
 }colour_RGBA;
+
 
 
 /** Adafruit_NeoPixel-compatible 'wrapper' for LED control over seesaw
@@ -127,12 +135,12 @@ public:
       setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b, uint8_t w),
       setPixelColor(uint16_t n, uint32_t c), setBrightness(uint8_t), clear(),
       updateLength(uint16_t n), updateType(neoPixelType t);
-  uint8_t *getPixels(void) const, getBrightness(void) const;
+  colour_RGBA *getPixels(void) const, getBrightness(void) const;
   int8_t getPin(void) { return pin; };
   uint16_t numPixels(void) const;
   static uint32_t Color(uint8_t r, uint8_t g, uint8_t b),
       Color(uint8_t r, uint8_t g, uint8_t b, uint8_t w);
-  uint32_t getPixelColor(uint16_t n) const;
+  colour_RGBA getPixelColor(uint16_t n) const;
   inline bool canShow(void) { return (micros() - endTime) >= 300L; }
 
 protected:
@@ -141,14 +149,13 @@ protected:
   uint16_t numLEDs, // Number of RGB LEDs in strip
       numBytes;     // Size of 'pixels' buffer below (3 or 4 bytes/pixel)
   int8_t pin;
-  uint8_t brightness,
-          *pixels,      // Holds LED color values (3 or 4 bytes each)
+  uint8_t brightness,      // Holds LED color values (3 or 4 bytes each)
           rOffset,      // Index of red byte within each 3- or 4-byte pixel
           gOffset,      // Index of green byte
           bOffset,      // Index of blue byte
           wOffset;      // Index of white byte (same as rOffset if no white)
   uint32_t endTime; // Latch timing reference
-
+  colour_RGBA * pixels;
   uint16_t type;
 };
 

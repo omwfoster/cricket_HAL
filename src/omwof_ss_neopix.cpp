@@ -25,8 +25,8 @@
   <http://www.gnu.org/licenses/>.
   -------------------------------------------------------------------------*/
 
-#include "seesaw_neopixel.hpp"
-#include "Adafruit_seesaw.hpp"
+#include "omwof_ss_neopix.hpp"
+#include "omwof_ss.hpp"
 #include "debug_print.h"
 
 // Constructor when length, pin and type are known at compile-time:
@@ -75,7 +75,7 @@ void seesaw_NeoPixel::updateLength(uint16_t n)
 
   // Allocate new data -- note: ALL PIXELS ARE CLEARED
   numBytes = n * ((wOffset == rOffset) ? 3 : 4);
-  if ((pixels = (uint8_t *)malloc(numBytes)))
+  if ((pixels = (colour_RGBA *)malloc(numBytes)))
   {
     memset(pixels, 0, numBytes);
     numLEDs = n;
@@ -149,6 +149,9 @@ void seesaw_NeoPixel::setPixelColor(uint16_t n, uint8_t r, uint8_t g,
                                     uint8_t b)
 {
 
+  colour_RGBA col1;
+  
+
   if (n < numLEDs)
   {
     if (brightness)
@@ -157,19 +160,19 @@ void seesaw_NeoPixel::setPixelColor(uint16_t n, uint8_t r, uint8_t g,
       g = (g * brightness) >> 8;
       b = (b * brightness) >> 8;
     }
-    uint8_t *p;
+    colour_RGBA *p;
     if (wOffset == rOffset)
     {                     // Is an RGB-type strip
-      p = &pixels[n * 3]; // 3 bytes per pixel
+      p = &pixels[n]; // 3 bytes per pixel
     }
     else
     {                     // Is a WRGB-type strip
-      p = &pixels[n * 4]; // 4 bytes per pixel
-      p[wOffset] = 0;     // But only R,G,B passed -- set W to 0
+      p = &pixels[n]; // 4 bytes per pixel
+     // p[wOffset] = col1.rgba8{0,0,0,0};     // But only R,G,B passed -- set W to 0
     }
-    p[rOffset] = r; // R,G,B always stored
-    p[gOffset] = g;
-    p[bOffset] = b;
+    p[rOffset].rgba8.r = r; // R,G,B always stored
+    p[gOffset].rgba8.g = g;
+    p[bOffset].rgba8.b = b;
 
     uint8_t len = (wOffset == rOffset ? 3 : 4);
     uint16_t offset = n * len;
@@ -196,19 +199,19 @@ void seesaw_NeoPixel::setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b,
       b = (b * brightness) >> 8;
       w = (w * brightness) >> 8;
     }
-    uint8_t *p;
+    colour_RGBA *p;
     if (wOffset == rOffset)
     {                     // Is an RGB-type strip
-      p = &pixels[n * 3]; // 3 bytes per pixel (ignore W)
+      p = &pixels[n]; // 3 bytes per pixel (ignore W)
     }
     else
     {                     // Is a WRGB-type strip
-      p = &pixels[n * 4]; // 4 bytes per pixel
-      p[wOffset] = w;     // Store W
+      p = &pixels[n]; // 4 bytes per pixel
+    //  p[wOffset] = w;     // Store W
     }
-    p[rOffset] = r; // Store R,G,B
-    p[gOffset] = g;
-    p[bOffset] = b;
+    p[rOffset].rgba8.r = r; // R,G,B always stored
+    p[gOffset].rgba8.g = g;
+    p[bOffset].rgba8.b = b;
 
     uint8_t len = (wOffset == rOffset ? 3 : 4);
     uint16_t offset = n * len;
@@ -227,34 +230,7 @@ void seesaw_NeoPixel::setPixelColor(uint16_t n, uint32_t c)
 {
   if (n < numLEDs)
   {
-    uint8_t *p, r = (uint8_t)(c >> 16), g = (uint8_t)(c >> 8), b = (uint8_t)c;
-    if (brightness)
-    { // See notes in setBrightness()
-      r = (r * brightness) >> 8;
-      g = (g * brightness) >> 8;
-      b = (b * brightness) >> 8;
-    }
-    if (wOffset == rOffset)
-    {
-      p = &pixels[n * 3];
-    }
-    else
-    {
-      p = &pixels[n * 4];
-      uint8_t w = (uint8_t)(c >> 24);
-      p[wOffset] = brightness ? ((w * brightness) >> 8) : w;
-    }
-    p[rOffset] = r;
-    p[gOffset] = g;
-    p[bOffset] = b;
-
-    uint8_t len = (wOffset == rOffset ? 3 : 4);
-    uint16_t offset = n * len;
-
-    uint8_t writeBuf[6];
-    writeBuf[0] = (offset >> 8);
-    writeBuf[1] = offset;
-    memcpy(&writeBuf[2], p, len);
+    
 
    // this->write(SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_BUF, c, 3);
   }
@@ -275,16 +251,16 @@ uint32_t seesaw_NeoPixel::Color(uint8_t r, uint8_t g, uint8_t b, uint8_t w)
 }
 
 // Query color from previously-set pixel (returns packed 32-bit RGB value)
-uint32_t seesaw_NeoPixel::getPixelColor(uint16_t n) const
+colour_RGBA seesaw_NeoPixel::getPixelColor(uint16_t n) const
 {
   if (n >= numLEDs)
-    return 0; // Out of bounds, return no color.
+    return colour_RGBA{0,0,0,0}; // Out of bounds, return no color.
 
-  uint8_t *p;
+  colour_RGBA *p;
 
   if (wOffset == rOffset)
   { // Is RGB-type device
-    p = &pixels[n * 3];
+    p = &pixels[n];
     if (brightness)
     {
       // Stored color was decimated by setBrightness().  Returned value
@@ -292,15 +268,12 @@ uint32_t seesaw_NeoPixel::getPixelColor(uint16_t n) const
       // value used when setting the pixel color, but there will always be
       // some error -- those bits are simply gone.  Issue is most
       // pronounced at low brightness levels.
-      return (((uint32_t)(p[rOffset] << 8) / brightness) << 16) |
-             (((uint32_t)(p[gOffset] << 8) / brightness) << 8) |
-             ((uint32_t)(p[bOffset] << 8) / brightness);
+      return colour_RGBA{0,0,0,0};
     }
     else
     {
       // No brightness adjustment has been made -- return 'raw' color
-      return ((uint32_t)p[rOffset] << 16) | ((uint32_t)p[gOffset] << 8) |
-             (uint32_t)p[bOffset];
+      return colour_RGBA{0,0,0,0};
     }
   }
   else
@@ -308,15 +281,11 @@ uint32_t seesaw_NeoPixel::getPixelColor(uint16_t n) const
     p = &pixels[n * 4];
     if (brightness)
     { // Return scaled color
-      return (((uint32_t)(p[wOffset] << 8) / brightness) << 24) |
-             (((uint32_t)(p[rOffset] << 8) / brightness) << 16) |
-             (((uint32_t)(p[gOffset] << 8) / brightness) << 8) |
-             ((uint32_t)(p[bOffset] << 8) / brightness);
+      return colour_RGBA{0,0,0,0};
     }
     else
     { // Return raw color
-      return ((uint32_t)p[wOffset] << 24) | ((uint32_t)p[rOffset] << 16) |
-             ((uint32_t)p[gOffset] << 8) | (uint32_t)p[bOffset];
+      return colour_RGBA{0,0,0,0};
     }
   }
 }
@@ -324,7 +293,7 @@ uint32_t seesaw_NeoPixel::getPixelColor(uint16_t n) const
 // Returns pointer to pixels[] array.  Pixel data is stored in device-
 // native format and is not translated here.  Application will need to be
 // aware of specific pixel data format and handle colors appropriately.
-uint8_t *seesaw_NeoPixel::getPixels(void) const { return pixels; }
+colour_RGBA *seesaw_NeoPixel::getPixels(void) const { return pixels; }
 
 uint16_t seesaw_NeoPixel::numPixels(void) const { return numLEDs; }
 

@@ -119,6 +119,7 @@ int main(void)
   crick1->set_I2C(&hi2c1);
   neopix1 = new seesaw_NeoPixel();
   neopix1->set_I2C(&hi2c1);
+  neopix1->updateType(NEO_GRB + NEO_KHZ800);
   neopix1->updateLength(1);
 
   
@@ -282,45 +283,9 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-uint16_t send_seesaw_cmd(uint8_t i2c_addr)
-{
 
-  HAL_StatusTypeDef ret;
-  uint8_t buf[2];
-  uint16_t val;
 
-  // Tell PCT2075 that we want to read from the temperature register
-  buf[0] = PCT_REG_TEMP;
-  ret = HAL_I2C_Master_Transmit(&hi2c1, SEESAW_ADDRESS, buf, 1, I2C_DELAY);
 
-  // If the I2C device has just been hot-plugged, reset the peripheral
-  if (ret == HAL_BUSY)
-  {
-    if (HAL_I2C_DeInit(&hi2c1) != HAL_OK)
-    {
-      Error_Handler();
-    }
-    MX_I2C1_Init();
-  }
-
-  // Throw error if communication not OK
-  if (ret != HAL_OK)
-  {
-    return PCT_ERROR;
-  }
-
-  // Read 2 bytes from the temperature register
-  ret = HAL_I2C_Master_Receive(&hi2c1, SEESAW_ADDRESS, buf, 2, I2C_DELAY);
-  if (ret != HAL_OK)
-  {
-    return PCT_ERROR;
-  }
-
-  // Combine the bytes and return raw value
-  val = ((uint16_t)buf[0] << 3) | (buf[1] >> 5);
-
-  return val;
-}
 
 // Blink onboard LED
 void BlinkLED(uint32_t blink_delay, uint8_t num_blinks)
@@ -339,6 +304,16 @@ int debug_print_callback(char *debugMessage, unsigned int length)
 
   CDC_Transmit_FS((uint8_t *)debugMessage, length);
   return true;
+}
+
+void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *I2cHandle)
+{
+  DBG_PRINTF_DEBUG("I to the C, receive  callbackery");
+}
+
+void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *hi2c)
+{
+  DBG_PRINTF_DEBUG("I to the C, transmit callbackery");
 }
 
 /* USER CODE END 4 */

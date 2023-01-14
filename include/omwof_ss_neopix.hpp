@@ -104,18 +104,19 @@ __STATIC_INLINE uint32_t micros(void){
 
 typedef uint16_t neoPixelType;
 
-typedef struct  colour{
-  uint8_t r;
-  uint8_t g;
-  uint8_t b;
-  uint8_t gamma;
-} __attribute__((packed, aligned(1))) RGBA8;
-
-typedef union colour_RGBA
+typedef struct colour_word
 {
-  RGBA8 rgba8;
-  uint32_t RGBA32;
-}colour_RGBA;
+  uint8_t colour_int;
+  uint8_t padding;
+}__attribute__((packed, aligned(1))) colour_word;
+
+typedef struct  colour{
+  colour_word r;
+  colour_word g;
+  colour_word b;
+} __attribute__((packed, aligned(2))) colour_RGB;
+
+
 
 
 
@@ -133,14 +134,14 @@ public:
   void show(void), setPin(uint8_t p),
       setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b),
       setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b, uint8_t w),
-      setPixelColor(uint16_t n, uint32_t c), setBrightness(uint8_t), clear(),
+      setPixelColor(uint16_t n, colour_RGB c), setBrightness(uint8_t), clear(),
       updateLength(uint16_t n), updateType(neoPixelType t);
-  colour_RGBA *getPixels(void) const, getBrightness(void) const;
+  colour_RGB *getPixels(void) const, getBrightness(void) const;
   int8_t getPin(void) { return pin; };
   uint16_t numPixels(void) const;
-  static uint32_t Color(uint8_t r, uint8_t g, uint8_t b),
+  static colour_RGB Color(uint8_t r, uint8_t g, uint8_t b),
       Color(uint8_t r, uint8_t g, uint8_t b, uint8_t w);
-  colour_RGBA getPixelColor(uint16_t n) const;
+  colour_RGB getPixelColor(uint16_t n);
   inline bool canShow(void) { return (micros() - endTime) >= 300L; }
 
 protected:
@@ -155,7 +156,7 @@ protected:
           bOffset,      // Index of blue byte
           wOffset;      // Index of white byte (same as rOffset if no white)
   uint32_t endTime; // Latch timing reference
-  colour_RGBA * pixels;
+  uint8_t * pixels;
   uint16_t type;
 };
 

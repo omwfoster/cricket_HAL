@@ -956,12 +956,4 @@ size_t Adafruit_seesaw::write(const char *str)
   return len;
 }
 
-void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *I2cHandle)
-{
-  DBG_PRINTF_DEBUG("I to the C, receive  callbackery");
-}
 
-void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *hi2c)
-{
-  DBG_PRINTF_DEBUG("I to the C, transmit callbackery");
-}

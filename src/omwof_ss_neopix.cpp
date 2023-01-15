@@ -70,7 +70,7 @@ void seesaw_NeoPixel::updateLength(uint16_t n)
 
   // Allocate new data -- note: ALL PIXELS ARE CLEARED
   numBytes = n * ((wOffset == rOffset) ? 3 : 4);
-  if (pixels = (uint8_t *)malloc(numBytes))
+  if ((pixels) == (colour_RGB *)malloc(numBytes))
   {
     memset(pixels, 0, numBytes);
     numLEDs = n;
@@ -140,7 +140,7 @@ void seesaw_NeoPixel::setPixelColor(uint16_t n, uint8_t r, uint8_t g,
                                     uint8_t b)
 {
 
-  colour_RGB col1;
+  
 
   if (n < numLEDs)
   {
@@ -249,7 +249,7 @@ void seesaw_NeoPixel::clear()
 
   for (uint8_t offset = 0; offset < numBytes; offset += 32 - 4)
   {
-    this->write(SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_BUF, pixels, numBytes);
+    this->write(SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_BUF, ptr_output_buffer, numBytes);
   }
 }
 

@@ -103,18 +103,21 @@ __STATIC_INLINE uint32_t micros(void){
 #define NEO_KHZ400 0x0100 // 400 KHz datastream
 
 typedef uint16_t neoPixelType;
+#define  NUM_PIXELS 1
 
 typedef struct colour_word
 {
   uint8_t colour_int;
   uint8_t padding;
-}__attribute__((packed, aligned(1))) colour_word;
+}__attribute__((packed, aligned(2))) colour_word;
 
 typedef struct  colour{
   colour_word r;
   colour_word g;
   colour_word b;
-} __attribute__((packed, aligned(2))) colour_RGB;
+} __attribute__((packed, aligned(8))) colour_RGB;
+
+
 
 
 
@@ -156,8 +159,9 @@ protected:
           bOffset,      // Index of blue byte
           wOffset;      // Index of white byte (same as rOffset if no white)
   uint32_t endTime; // Latch timing reference
-  uint8_t * pixels;
+  colour_RGB * pixels;
   uint16_t type;
+  uint8_t * ptr_output_buffer;
 };
 
 #endif // seesaw_NeoPixel_H

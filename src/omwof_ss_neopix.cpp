@@ -150,42 +150,13 @@ void seesaw_NeoPixel::setPixelColor(uint16_t n, uint8_t r, uint8_t g,
       b = (b * brightness) >> 8;
     }
     colour_RGB *p;
-  
-  p = &this->pixels[n];
+
+    p = &this->pixels[n];
     p->r = r;
     p->g = g;
     p->b = b;
 
-    uint8_t len = (wOffset == rOffset ? 3 : 4);
-    uint16_t offset = n * len;
-
-    uint8_t writeBuf[6];
-    writeBuf[0] = (offset >> 8);
-    writeBuf[1] = offset;
-    memcpy(&writeBuf[2], p, len);
-
-    this->write(SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_BUF, writeBuf, len + 2);
-  }
-}
-
-void seesaw_NeoPixel::setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b,
-                                    uint8_t w)
-{
-
-  if (n < numLEDs)
-  {
-
-    colour_RGB *p;
-
-    uint8_t len = (wOffset == rOffset ? 3 : 4);
-    uint16_t offset = n * len;
-
-    uint8_t writeBuf[6];
-    writeBuf[0] = (offset >> 8);
-    writeBuf[1] = offset;
-    memcpy(&writeBuf[2], p, len);
-
-    this->write(SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_BUF, writeBuf, len + 2);
+   
   }
 }
 
@@ -194,7 +165,20 @@ void seesaw_NeoPixel::setPixelColor(uint16_t n, colour_RGB c)
 {
   if (n < numLEDs)
   {
-    // this->write(SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_BUF, &c.r.colour_int);
+    if (brightness)
+    { // See notes in setBrightness()
+      c.r = (c.r * brightness) >> 8;
+      c.g = (c.g * brightness) >> 8;
+      c.b = (c.b * brightness) >> 8;
+    }
+    colour_RGB *p;
+
+    p = &this->pixels[n];
+    p->r = c.r;
+    p->g = c.g;
+    p->b = c.b;
+
+    
   }
 }
 
@@ -249,7 +233,6 @@ void seesaw_NeoPixel::clear()
 
 void seesaw_NeoPixel::setBrightness(uint8_t b) { brightness = b; }
 
-
 void seesaw_NeoPixel::output_stream()
 {
 
@@ -258,16 +241,12 @@ void seesaw_NeoPixel::output_stream()
 
   for (int i = 0; i < this->numLEDs; i++)
   {
-    * ptr_output_buffer = pixels->r;
-    ptr_output_buffer ++;
-    * ptr_output_buffer = pixels->g;
-    ptr_output_buffer ++;
-    * ptr_output_buffer = pixels->b;
-    ptr_output_buffer ++;
+    *ptr_output_buffer = pixels->r;
+    ptr_output_buffer++;
+    *ptr_output_buffer = pixels->g;
+    ptr_output_buffer++;
+    *ptr_output_buffer = pixels->b;
+    ptr_output_buffer++;
     ptr_pixels++;
-    
-
   }
-
-
 }

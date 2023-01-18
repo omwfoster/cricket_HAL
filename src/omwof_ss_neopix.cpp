@@ -150,15 +150,11 @@ void seesaw_NeoPixel::setPixelColor(uint16_t n, uint8_t r, uint8_t g,
       b = (b * brightness) >> 8;
     }
     colour_RGB *p;
-    if (wOffset == rOffset)
-    { // Is an RGB-type strip
-      // p = &pixels[n]; // 3 bytes per pixel
-    }
-    else
-    { // Is a WRGB-type strip
-      ///  p = &pixels[n]; // 4 bytes per pixel
-      // p[wOffset] = col1.rgba8{0,0,0,0};     // But only R,G,B passed -- set W to 0
-    }
+  
+  p = &this->pixels[n];
+    p->r = r;
+    p->g = g;
+    p->b = b;
 
     uint8_t len = (wOffset == rOffset ? 3 : 4);
     uint16_t offset = n * len;
@@ -262,11 +258,11 @@ void seesaw_NeoPixel::output_stream()
 
   for (int i = 0; i < this->numLEDs; i++)
   {
-    * ptr_output_buffer = pixels->r.colour_int;
+    * ptr_output_buffer = pixels->r;
     ptr_output_buffer ++;
-    * ptr_output_buffer = pixels->g.colour_int;
+    * ptr_output_buffer = pixels->g;
     ptr_output_buffer ++;
-    * ptr_output_buffer = pixels->b.colour_int;
+    * ptr_output_buffer = pixels->b;
     ptr_output_buffer ++;
     ptr_pixels++;
     

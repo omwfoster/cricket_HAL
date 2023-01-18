@@ -105,16 +105,12 @@ __STATIC_INLINE uint32_t micros(void){
 typedef uint16_t neoPixelType;
 #define  NUM_PIXELS 1
 
-typedef struct colour_word
-{
-  uint8_t colour_int;
-  uint8_t padding;
-}__attribute__((packed, aligned(2))) colour_word;
 
-typedef struct  colour{
-  colour_word r;
-  colour_word g;
-  colour_word b;
+typedef struct colour{
+  uint8_t r;
+  uint8_t g;
+  uint8_t b;
+  uint8_t padding;
 } __attribute__((packed, aligned(8))) colour_RGB;
 
 

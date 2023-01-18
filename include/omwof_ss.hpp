@@ -313,7 +313,7 @@ protected:
 
   bool read(uint8_t regHigh, uint8_t regLow, uint8_t *buf, uint16_t num,
             uint16_t delay = 250);
-  bool write(uint8_t regHigh, uint8_t regLow, uint8_t *buf, uint8_t num);
+  bool write(uint8_t regHigh, uint8_t regLow, uint8_t *buf, uint16_t num);
 
 
 

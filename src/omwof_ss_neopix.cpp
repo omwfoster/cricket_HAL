@@ -121,7 +121,8 @@ void seesaw_NeoPixel::show(void)
   // rather than stalling for the latch.
   // while (!canShow())
   //  ;
-  this->write(SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_SHOW, NULL, 0);
+  this->output_stream();
+  this->write((uint8_t)SEESAW_NEOPIXEL_BASE, (uint8_t)SEESAW_NEOPIXEL_SHOW, this->output_buffer, numBytes);
   endTime = micros(); // Save EOD time for latch on next call
   DBG_PRINTF_DEBUG("neopixel::write");
 }
@@ -140,8 +141,6 @@ void seesaw_NeoPixel::setPixelColor(uint16_t n, uint8_t r, uint8_t g,
                                     uint8_t b)
 {
 
-  
-
   if (n < numLEDs)
   {
     if (brightness)
@@ -150,17 +149,16 @@ void seesaw_NeoPixel::setPixelColor(uint16_t n, uint8_t r, uint8_t g,
       g = (g * brightness) >> 8;
       b = (b * brightness) >> 8;
     }
-    colour_RGB * p;
+    colour_RGB *p;
     if (wOffset == rOffset)
-    {                 // Is an RGB-type strip
-     // p = &pixels[n]; // 3 bytes per pixel
+    { // Is an RGB-type strip
+      // p = &pixels[n]; // 3 bytes per pixel
     }
     else
-    {                 // Is a WRGB-type strip
-    ///  p = &pixels[n]; // 4 bytes per pixel
-                      // p[wOffset] = col1.rgba8{0,0,0,0};     // But only R,G,B passed -- set W to 0
+    { // Is a WRGB-type strip
+      ///  p = &pixels[n]; // 4 bytes per pixel
+      // p[wOffset] = col1.rgba8{0,0,0,0};     // But only R,G,B passed -- set W to 0
     }
-    
 
     uint8_t len = (wOffset == rOffset ? 3 : 4);
     uint16_t offset = n * len;
@@ -180,11 +178,8 @@ void seesaw_NeoPixel::setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b,
 
   if (n < numLEDs)
   {
-  
+
     colour_RGB *p;
- 
-    
-  
 
     uint8_t len = (wOffset == rOffset ? 3 : 4);
     uint16_t offset = n * len;
@@ -203,7 +198,7 @@ void seesaw_NeoPixel::setPixelColor(uint16_t n, colour_RGB c)
 {
   if (n < numLEDs)
   {
-   // this->write(SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_BUF, &c.r.colour_int);
+    // this->write(SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_BUF, &c.r.colour_int);
   }
 }
 
@@ -218,11 +213,15 @@ colour_RGB seesaw_NeoPixel::Color(uint8_t r, uint8_t g, uint8_t b)
 // Packed format is always WRGB, regardless of LED strand color order.
 colour_RGB seesaw_NeoPixel::Color(uint8_t r, uint8_t g, uint8_t b, uint8_t w)
 {
-  return colour_RGB{r, g, b, };
+  return colour_RGB{
+      r,
+      g,
+      b,
+  };
 }
 
 // Query color from previously-set pixel (returns packed 32-bit RGB value)
-colour_RGB seesaw_NeoPixel::getPixelColor(uint16_t n) 
+colour_RGB seesaw_NeoPixel::getPixelColor(uint16_t n)
 {
   if (n >= numLEDs)
   {
@@ -230,14 +229,14 @@ colour_RGB seesaw_NeoPixel::getPixelColor(uint16_t n)
   }
   else
   {
-    return colour_RGB{0, 0, 0,0};
+    return colour_RGB{0, 0, 0, 0};
   }
 }
 
 // Returns pointer to pixels[] array.  Pixel data is stored in device-
 // native format and is not translated here.  Application will need to be
 // aware of specific pixel data format and handle colors appropriately.
-colour_RGB *seesaw_NeoPixel::getPixels(void) const { return NULL; } //colour_RGB{0, 0, 0}; }
+colour_RGB *seesaw_NeoPixel::getPixels(void) const { return NULL; } // colour_RGB{0, 0, 0}; }
 
 uint16_t seesaw_NeoPixel::numPixels(void) const { return numLEDs; }
 
@@ -246,7 +245,6 @@ void seesaw_NeoPixel::clear()
   // Clear local pixel buffer
   memset(pixels, 0, numBytes);
 
-
   for (uint8_t offset = 0; offset < numBytes; offset += 32 - 4)
   {
     this->write(SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_BUF, ptr_output_buffer, numBytes);
@@ -254,3 +252,26 @@ void seesaw_NeoPixel::clear()
 }
 
 void seesaw_NeoPixel::setBrightness(uint8_t b) { brightness = b; }
+
+
+void seesaw_NeoPixel::output_stream()
+{
+
+  ptr_pixels = pixels;
+  ptr_output_buffer = output_buffer;
+
+  for (int i = 0; i < this->numLEDs; i++)
+  {
+    * ptr_output_buffer = pixels->r.colour_int;
+    ptr_output_buffer ++;
+    * ptr_output_buffer = pixels->g.colour_int;
+    ptr_output_buffer ++;
+    * ptr_output_buffer = pixels->b.colour_int;
+    ptr_output_buffer ++;
+    ptr_pixels++;
+    
+
+  }
+
+
+}

@@ -148,6 +148,7 @@ public:
   inline bool canShow(void) { return (micros() - endTime) >= 300L; }
 
 protected:
+  void output_stream(void);
   bool is800KHz, // ...true if 800 KHz pixels
       begun;        // true if begin() previously called
   uint16_t numLEDs, // Number of RGB LEDs in strip
@@ -159,9 +160,13 @@ protected:
           bOffset,      // Index of blue byte
           wOffset;      // Index of white byte (same as rOffset if no white)
   uint32_t endTime; // Latch timing reference
-  colour_RGB * pixels;
-  uint16_t type;
+  colour_RGB  * pixels;
+  uint8_t  * output_buffer;
+  colour_RGB * ptr_pixels;
   uint8_t * ptr_output_buffer;
+  uint16_t type;
+  
+  
 };
 
 #endif // seesaw_NeoPixel_H

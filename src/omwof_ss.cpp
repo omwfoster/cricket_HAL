@@ -895,7 +895,7 @@ bool Adafruit_seesaw::read(uint8_t regHigh, uint8_t regLow, uint8_t *buf,
 uint8_t output_string[30];
 const uint8_t *aTxBuffer = &output_string[0];
 bool Adafruit_seesaw::write(uint8_t regHigh, uint8_t regLow,
-                            uint8_t *buf = NULL, uint8_t num = 0)
+                            uint8_t *buf = NULL, uint16_t num = 0)
 {
   output_string[0] = regHigh;
   output_string[1] = regLow;

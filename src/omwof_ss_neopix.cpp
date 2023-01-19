@@ -44,9 +44,9 @@ seesaw_NeoPixel::seesaw_NeoPixel(I2C_HandleTypeDef *x)
 #ifdef NEO_KHZ400
       is800KHz(true),
 #endif
-      begun(false), numLEDs(0), numBytes(0), pin(-1), brightness(0),
-      pixels(NULL), rOffset(1), gOffset(0), bOffset(2), wOffset(1), endTime(0)
-{
+      begun(false), numLEDs(0), numBytes(0), pin(-1), brightness(0){
+      
+
 }
 
 seesaw_NeoPixel::~seesaw_NeoPixel()
@@ -69,7 +69,7 @@ void seesaw_NeoPixel::updateLength(uint16_t n)
     free(pixels); // Free existing data (if any)
 
   // Allocate new data -- note: ALL PIXELS ARE CLEARED
-  numBytes = n * ((wOffset == rOffset) ? 3 : 4);
+  
   if ((pixels) == (colour_RGB *)malloc(numBytes))
   {
     memset(pixels, 0, numBytes);
@@ -86,7 +86,7 @@ void seesaw_NeoPixel::updateLength(uint16_t n)
 
 void seesaw_NeoPixel::updateType(neoPixelType t)
 {
-  bool oldThreeBytesPerPixel = (wOffset == rOffset); // false if RGBW
+  
 
   wOffset = (t >> 6) & 0b11; // See notes in header file
   rOffset = (t >> 4) & 0b11; // regarding R/G/B/W offsets
@@ -100,8 +100,7 @@ void seesaw_NeoPixel::updateType(neoPixelType t)
   // allocated), re-allocate to new size.  Will clear any data.
   if (pixels)
   {
-    bool newThreeBytesPerPixel = (wOffset == rOffset);
-    if (newThreeBytesPerPixel != oldThreeBytesPerPixel)
+  
       updateLength(numLEDs);
   }
 }

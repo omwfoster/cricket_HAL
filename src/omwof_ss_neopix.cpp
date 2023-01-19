@@ -44,9 +44,8 @@ seesaw_NeoPixel::seesaw_NeoPixel(I2C_HandleTypeDef *x)
 #ifdef NEO_KHZ400
       is800KHz(true),
 #endif
-      begun(false), numLEDs(0), numBytes(0), pin(-1), brightness(0){
-      
-
+      begun(false), numLEDs(0), numBytes(0), pin(-1), brightness(0)
+{
 }
 
 seesaw_NeoPixel::~seesaw_NeoPixel()
@@ -57,9 +56,15 @@ seesaw_NeoPixel::~seesaw_NeoPixel()
 
 bool seesaw_NeoPixel::begin(uint8_t addr, uint16_t numLEDs, int8_t flow)
 {
+  if (this->begun)
+  {
+    return true;
+  }
   if (!Adafruit_seesaw::begin(addr, flow, numLEDs))
     return false;
+  this->begun = false;
 
+  this->begun = true;
   return true;
 }
 
@@ -69,7 +74,7 @@ void seesaw_NeoPixel::updateLength(uint16_t n)
     free(pixels); // Free existing data (if any)
 
   // Allocate new data -- note: ALL PIXELS ARE CLEARED
-  
+
   if ((pixels) == (colour_RGB *)malloc(numBytes))
   {
     memset(pixels, 0, numBytes);
@@ -86,7 +91,6 @@ void seesaw_NeoPixel::updateLength(uint16_t n)
 
 void seesaw_NeoPixel::updateType(neoPixelType t)
 {
-  
 
   wOffset = (t >> 6) & 0b11; // See notes in header file
   rOffset = (t >> 4) & 0b11; // regarding R/G/B/W offsets
@@ -100,8 +104,8 @@ void seesaw_NeoPixel::updateType(neoPixelType t)
   // allocated), re-allocate to new size.  Will clear any data.
   if (pixels)
   {
-  
-      updateLength(numLEDs);
+
+    updateLength(numLEDs);
   }
 }
 
@@ -154,8 +158,6 @@ void seesaw_NeoPixel::setPixelColor(uint16_t n, uint8_t r, uint8_t g,
     p->r = r;
     p->g = g;
     p->b = b;
-
-   
   }
 }
 
@@ -176,8 +178,6 @@ void seesaw_NeoPixel::setPixelColor(uint16_t n, colour_RGB c)
     p->r = c.r;
     p->g = c.g;
     p->b = c.b;
-
-    
   }
 }
 

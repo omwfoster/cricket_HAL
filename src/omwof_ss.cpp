@@ -89,6 +89,7 @@ bool Adafruit_seesaw::begin(uint8_t addr, int8_t flow, bool reset)
   if (HAL_I2C_IsDeviceReady(this->hi2c, (ui << 1), 10, 0))
   {
     DBG_PRINTF_TRACE("i2c ready(begin)");
+    
     return true;
   }
   else
@@ -864,12 +865,12 @@ uint8_t Adafruit_seesaw::read8(byte regHigh, byte regLow, uint16_t delay)
 bool Adafruit_seesaw::read(uint8_t regHigh, uint8_t regLow, uint8_t *buf,
                            uint16_t num, uint16_t delay)
 {
-  uint8_t pos = 0;
+  
   uint8_t prefix[2];
   prefix[0] = (uint8_t)regHigh;
   prefix[1] = (uint8_t)regLow;
 
-  HAL_I2C_Master_Receive_DMA(this->hi2c, SEESAW_ADDRESS, buf, num);
+  HAL_I2C_Master_Receive_IT(this->hi2c, SEESAW_ADDRESS, buf, num);
 
 #ifdef SEESAW_I2C_DEBUG
   DBG_PRINTF_DEBUG("Reading ");

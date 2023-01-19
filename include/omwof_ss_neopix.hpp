@@ -132,7 +132,6 @@ public:
   bool begin(uint8_t addr = SEESAW_ADDRESS,uint16_t numLEDs=1 ,int8_t flow = -1);
   void show(void), setPin(uint8_t p),
       setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b),
-      setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b, uint8_t w),
       setPixelColor(uint16_t n, colour_RGB c), setBrightness(uint8_t), clear(),
       updateLength(uint16_t n), updateType(neoPixelType t);
   colour_RGB *getPixels(void) const, getBrightness(void) const;

@@ -306,12 +306,12 @@ int debug_print_callback(char *debugMessage, unsigned int length)
   return true;
 }
 
-void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *I2cHandle)
+void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c1)
 {
   DBG_PRINTF_DEBUG("I to the C, receive  callbackery");
 }
 
-void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *hi2c)
+void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *hi2c1)
 {
   DBG_PRINTF_DEBUG("I to the C, transmit callbackery");
 }

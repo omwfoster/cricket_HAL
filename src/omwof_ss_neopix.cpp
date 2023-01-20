@@ -221,13 +221,15 @@ uint16_t seesaw_NeoPixel::numPixels(void) const { return numLEDs; }
 
 void seesaw_NeoPixel::clear()
 {
+  uint16_t sz_pix_arr = (numLEDs * sizeof(pixels));
+  uint16_t sz_out_buf = 2 * sz_pix_arr;
   // Clear local pixel buffer
-  memset(pixels, 0, numBytes);
+  memset(this->pixels, 0, sz_pix_arr );
+  memset(ptr_output_buffer,0,sz_out_buf);
 
-  for (uint8_t offset = 0; offset < numBytes; offset += 32 - 4)
-  {
-    this->write(SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_BUF, ptr_output_buffer, numBytes);
-  }
+  
+    this->write(SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_BUF, ptr_output_buffer, sz_out_buf);
+  
 }
 
 void seesaw_NeoPixel::setBrightness(uint8_t b) { brightness = b; }

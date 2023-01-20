@@ -1,3 +1,7 @@
 {
-    "C_Cpp.errorSquiggles": "Disabled"
+    "C_Cpp.errorSquiggles": "Disabled",
+    "sonarlint.connectedMode.project": {
+        "connectionId": "omwfoster",
+        "projectKey": "omwfoster_cricket_HAL"
+    }
 }

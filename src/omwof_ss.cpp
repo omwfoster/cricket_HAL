@@ -608,6 +608,7 @@ void Adafruit_seesaw::EEPROMWrite8(uint8_t addr, uint8_t val)
   this->EEPROMWrite(addr, &val, 1);
 }
 
+
 /*!
  *****************************************************************************************
  *  @brief      write a string of bytes to EEPROM starting at the passed address
@@ -902,7 +903,7 @@ bool Adafruit_seesaw::write(uint8_t regHigh, uint8_t regLow,
   output_string[1] = regLow;
   // TODO : catch buffer overflow if(num< .........
 
-  DBG_PRINTF_TRACE("seesaw::write");
+  DBG_PRINTF_TRACE("seesaw::write",0x08,"hoodoo");
 
   memcpy(buf, &output_string[2], num);
 
@@ -952,7 +953,7 @@ size_t Adafruit_seesaw::write(const char *str)
     str++;
     len++;
   }
-  DBG_PRINTF_TRACE("write");
+  DBG_PRINTF_TRACE("write","write_arg");
   this->write(SEESAW_SERCOM0_BASE, SEESAW_SERCOM_DATA, buf, len);
   return len;
 }

@@ -221,6 +221,8 @@ uint16_t seesaw_NeoPixel::numPixels(void) const { return numLEDs; }
 
 void seesaw_NeoPixel::clear()
 {
+
+  DBG_PRINTF_TRACE("clear buffers");
   uint16_t sz_pix_arr = (numLEDs * sizeof(pixels));
   uint16_t sz_out_buf = 2 * sz_pix_arr;
   // Clear local pixel buffer
@@ -242,7 +244,7 @@ void seesaw_NeoPixel::output_stream()
 
   for (int i = 0; i < this->numLEDs; i++)
   {
-    *ptr_output_buffer = pixels->r;
+    *ptr_output_buffer = (pixels->r);
     ptr_output_buffer++;
     *ptr_output_buffer = pixels->g;
     ptr_output_buffer++;

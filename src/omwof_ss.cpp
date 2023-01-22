@@ -60,6 +60,7 @@ bool Adafruit_seesaw::set_I2C(I2C_HandleTypeDef *hI2c)
   {
     HAL_I2C_Init(hi2c);
     HAL_I2C_EnableListen_IT(hI2c);
+    DBG_PRINTF_TRACE("i2c connection ready");
     return true;
   }
   else
@@ -579,7 +580,7 @@ char Adafruit_seesaw::readSercomData(uint8_t sercom)
 void Adafruit_seesaw::setI2CAddr(uint8_t addr)
 {
   this->EEPROMWrite8(SEESAW_EEPROM_I2C_ADDR, addr);
-  //  delay(250);
+  HAL_Delay(250);
   this->begin(addr); // restart w/ the new addr
 }
 
@@ -817,9 +818,9 @@ bool Adafruit_seesaw::write8(byte regHigh, byte regLow, byte value)
   buf[1] = regLow;
   buf[2] = value;
 
-  if(HAL_I2C_Master_Transmit_IT(this->hi2c, (uint16_t)SEESAW_ADDRESS, &buf[0], 3))
+  if(HAL_I2C_Master_Transmit_IT(this->hi2c, (uint16_t)this->i2c_address_local, &buf[0], 3)==HAL_OK)
   {
-    DBG_PRINTF_TRACE("transmit byte good");
+    DBG_PRINTF_TRACE("transmit byte good",buf);
     return true;
   }
 
@@ -875,7 +876,7 @@ bool Adafruit_seesaw::read(uint8_t regHigh, uint8_t regLow, uint8_t *buf,
 
 #ifdef SEESAW_I2C_DEBUG
   DBG_PRINTF_DEBUG("Reading ");
-  // DBG_PRINTF_DEBUG(num);
+  
   DBG_PRINTF_DEBUG(" bytes");
 #endif
 
@@ -925,6 +926,7 @@ bool Adafruit_seesaw::write(uint8_t regHigh, uint8_t regLow,
  ****************************************************************************************/
 size_t Adafruit_seesaw::write(uint8_t character)
 {
+  DBG_PRINTF_TRACE("write char - ", character );
   // TODO: add support for multiple sercoms
   this->write8(SEESAW_SERCOM0_BASE, SEESAW_SERCOM_DATA, character);
   // delay(1); // TODO: this can be optimized... it's only needed for longer writes
@@ -953,7 +955,7 @@ size_t Adafruit_seesaw::write(const char *str)
     str++;
     len++;
   }
-  DBG_PRINTF_TRACE("write","write_arg");
+  DBG_PRINTF_TRACE("write",str);
   this->write(SEESAW_SERCOM0_BASE, SEESAW_SERCOM_DATA, buf, len);
   return len;
 }

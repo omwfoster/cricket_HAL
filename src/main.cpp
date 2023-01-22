@@ -30,7 +30,6 @@
 #include "Adafruit_Crickit.hpp"
 #include "omwof_ss_neopix.hpp"
 
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -55,10 +54,9 @@
 I2C_HandleTypeDef hi2c1;
 
 /* USER CODE BEGIN PV */
-static const uint32_t I2C_DELAY = 1000;        // Time (ms) to wait for I2C
-static const uint8_t PCT_I2C_ADDR = 0x37 << 1; // Use 8-bit address
-static const uint8_t PCT_REG_TEMP = 0x00;      // Temperature register
-static const uint16_t PCT_ERROR = 0xFFFF;      // I2C/PCT error code
+static const uint32_t I2C_DELAY = 1000;          // Time (ms) to wait for I2C
+uint8_t crick_i2c_address = 0x37 << 1; // Use 8-bit address
+
 Adafruit_Crickit *crick1;
 seesaw_NeoPixel *neopix1;
 /* USER CODE END PV */
@@ -83,6 +81,23 @@ void BlinkLED(uint32_t blink_delay, uint8_t num_blinks);
  * @brief  The application entry point.
  * @retval int
  */
+
+uint8_t I2C_bus_scan(void)
+{
+  HAL_StatusTypeDef ret;
+  uint8_t i;
+  for (i = 1; i < 128; i++)
+  {
+    ret = HAL_I2C_IsDeviceReady(&hi2c1, (uint16_t)(i << 1), 3, 5);
+    if (ret == HAL_OK) /* No ACK Received At That Address */
+    {
+      DBG_PRINTF_TRACE("I2C reponse:","0x%X", i);
+      return i;
+    }
+   
+  }
+  return 0;
+}
 int main(void)
 {
   /* USER CODE BEGIN 1 */
@@ -112,22 +127,25 @@ int main(void)
   HAL_Delay(3000);
   DBG_PRINTF_DEBUG("USB init");
 
-  
   HAL_I2C_MspInit(&hi2c1);
   MX_I2C1_Init();
-  crick1 = new Adafruit_Crickit();
-  crick1->set_I2C(&hi2c1);
+  
+  // crick1 = new Adafruit_Crickit();
+  // crick1->set_I2C(&hi2c1);
   neopix1 = new seesaw_NeoPixel();
   neopix1->set_I2C(&hi2c1);
+  neopix1->i2c_address_local = I2C_bus_scan() <<1 ;
+  DBG_PRINTF_TRACE("update type");
   neopix1->updateType(NEO_GRB + NEO_KHZ800);
-  neopix1->updateLength(1);
+  DBG_PRINTF_TRACE("update length");
 
-  
+  neopix1->updateLength(1);
+  neopix1->clear();
+  neopix1->setPin((uint8_t)27 << 1);
 
   BlinkLED(100, 3);
-  crick1->begin(0x49,-1,true);
-  neopix1->begin(0x49,-1,true);
-  neopix1->setPin((uint8_t)27);
+  // crick1->begin(CRICK_I2C_ADDR,-1,true);
+  neopix1->begin(crick_i2c_address, -1, true);
 
   /* USER CODE BEGIN 2 */
 
@@ -147,10 +165,10 @@ int main(void)
 
     if (!(hi2c1.State == HAL_I2C_STATE_BUSY))
     {
-        neopix1->setPixelColor(1,neopix1->Color(123, 10, 10));
-        neopix1->show();
+      neopix1->setPixelColor(neopix1->numPixels(), neopix1->Color(123, 10, 10));
+      neopix1->show();
 
-      DBG_PRINTF_DEBUG("pixel");
+      DBG_PRINTF_DEBUG("pixel output");
     }
     else
     {
@@ -238,7 +256,7 @@ static void MX_I2C1_Init(void)
   hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
   if (HAL_I2C_Init(&hi2c1) != HAL_OK)
   {
-    DBG_PRINTF_TRACE("i2c error");
+    DBG_PRINTF_TRACE("i2c error", "0x%X", hi2c1.Init.OwnAddress1);
     Error_Handler();
   }
   /* USER CODE BEGIN I2C1_Init 2 */
@@ -276,16 +294,9 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-
-
 }
 
 /* USER CODE BEGIN 4 */
-
-
-
-
 
 // Blink onboard LED
 void BlinkLED(uint32_t blink_delay, uint8_t num_blinks)
@@ -301,7 +312,6 @@ void BlinkLED(uint32_t blink_delay, uint8_t num_blinks)
 
 int debug_print_callback(char *debugMessage, unsigned int length)
 {
-
   CDC_Transmit_FS((uint8_t *)debugMessage, length);
   return true;
 }

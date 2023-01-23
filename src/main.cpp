@@ -130,7 +130,7 @@ int main(void)
   HAL_I2C_MspInit(&hi2c1);
   MX_I2C1_Init();
   
-  // crick1 = new Adafruit_Crickit();
+   // crick1 = new Adafruit_Crickit();
   // crick1->set_I2C(&hi2c1);
   neopix1 = new seesaw_NeoPixel();
   neopix1->set_I2C(&hi2c1);
@@ -141,7 +141,7 @@ int main(void)
 
   neopix1->updateLength(1);
   neopix1->clear();
-  neopix1->setPin((uint8_t)27 << 1);
+  neopix1->setPin((uint8_t)27 << 1); 
 
   BlinkLED(100, 3);
   // crick1->begin(CRICK_I2C_ADDR,-1,true);

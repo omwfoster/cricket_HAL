@@ -70,7 +70,8 @@ bool seesaw_NeoPixel::begin(uint8_t addr, uint16_t numLEDs, int8_t flow)
 
 void seesaw_NeoPixel::updateLength(uint16_t n)
 {
-  if (pixels)
+  DBG_PRINTF_TRACE("dealloc pixels");
+  if (!(pixels == NULL))
     free(pixels); // Free existing data (if any)
 
   // Allocate new data -- note: ALL PIXELS ARE CLEARED
@@ -79,11 +80,14 @@ void seesaw_NeoPixel::updateLength(uint16_t n)
   {
     memset(pixels, 0, numBytes);
     numLEDs = n;
+    DBG_PRINTF_TRACE("malloc pixels");
   }
   else
   {
     numLEDs = numBytes = 0;
   }
+
+
 
   uint8_t buf[] = {(uint8_t)(numBytes >> 8), (uint8_t)(numBytes & 0xFF)};
   this->write(SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_BUF_LENGTH, buf, 2);
@@ -92,7 +96,11 @@ void seesaw_NeoPixel::updateLength(uint16_t n)
 void seesaw_NeoPixel::updateType(neoPixelType t)
 {
 
-  
+  wOffset = (t >> 6) & 0b11; // See notes in header file
+  rOffset = (t >> 4) & 0b11; // regarding R/G/B/W offsets
+  gOffset = (t >> 2) & 0b11;
+  bOffset = t & 0b11;
+  is800KHz = (t < 256); // 400 KHz flag is 1<<8
 
   this->write8(SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_SPEED, is800KHz);
 
@@ -100,6 +108,7 @@ void seesaw_NeoPixel::updateType(neoPixelType t)
   // allocated), re-allocate to new size.  Will clear any data.
   if (pixels)
   {
+
     updateLength(numLEDs);
   }
 }

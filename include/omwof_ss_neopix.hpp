@@ -155,7 +155,7 @@ protected:
           bOffset,      // Index of blue byte
           wOffset;      // Index of white byte (same as rOffset if no white)
   uint32_t endTime; // Latch timing reference
-  colour_RGB  * pixels;
+  colour_RGB  * pixels = NULL;
   uint8_t  * output_buffer;
   colour_RGB * ptr_pixels;
   uint8_t * ptr_output_buffer;

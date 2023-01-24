@@ -818,7 +818,7 @@ bool Adafruit_seesaw::write8(byte regHigh, byte regLow, byte value)
   buf[1] = regLow;
   buf[2] = value;
 
-  if(HAL_I2C_Master_Transmit_IT(this->hi2c, (uint16_t)this->i2c_address_local, &buf[0], 3)==HAL_OK)
+  if(HAL_I2C_Master_Transmit_IT(this->hi2c, ((uint16_t)this->i2c_address_local<<1), &buf[0], 3)==HAL_OK)
   {
     DBG_PRINTF_TRACE("transmit byte good",buf);
     return true;

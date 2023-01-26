@@ -49,17 +49,12 @@ bool Adafruit_seesaw::set_I2C(I2C_HandleTypeDef *hI2c)
 
 { // todo: open i2c channel with cla
   this->hi2c = hI2c;
-  if ((this->hi2c) != NULL)
-  {
-    HAL_I2C_DeInit(this->hi2c);
-  }
+ 
 
-  this->hi2c = hI2c;
-
-  if ((hI2c->State) == HAL_I2C_STATE_READY)
+  if ((this->hi2c->State) == HAL_I2C_STATE_READY)
   {
-    HAL_I2C_Init(hi2c);
-    HAL_I2C_EnableListen_IT(hI2c);
+
+    if(HAL_I2C_EnableListen_IT(hI2c)==HAL_OK)
     DBG_PRINTF_TRACE("i2c connection ready");
     return true;
   }
@@ -67,6 +62,9 @@ bool Adafruit_seesaw::set_I2C(I2C_HandleTypeDef *hI2c)
   {
     return false;
   }
+
+
+
 }
 
 /*!

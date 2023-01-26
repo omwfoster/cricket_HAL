@@ -296,11 +296,12 @@ public:
   virtual size_t write(uint8_t);
   virtual size_t write(const char *str);
   uint8_t i2c_address_local;
+  I2C_HandleTypeDef * hi2c;
 
 protected:
 
   int8_t _flow; /*!< The flow control pin to use */
-  I2C_HandleTypeDef * hi2c;
+  
   
 
  

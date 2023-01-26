@@ -82,19 +82,19 @@ void BlinkLED(uint32_t blink_delay, uint8_t num_blinks);
  * @retval int
  */
 
-uint8_t I2C_bus_scan(void)
+uint8_t I2C_bus_scan(I2C_HandleTypeDef * h_i2c)
 {
   HAL_StatusTypeDef ret;
   uint8_t i;
   for (i = 1; i < 128; i++)
   {
-    ret = HAL_I2C_IsDeviceReady(&hi2c1, (uint16_t)(i << 1), 3, 5);
+    ret = HAL_I2C_IsDeviceReady(h_i2c, (uint16_t)(i << 1), 3, 5);
     if (ret == HAL_OK) /* No ACK Received At That Address */
     {
-      DBG_PRINTF_TRACE("I2C reponse:","0x%X", i);
+      DBG_PRINTF_TRACE("I2C reponse: %d", h_i2c->Devaddress);
       return i;
     }
-   
+   DBG_PRINTF_TRACE("I2C reponse bad: %d", i);
   }
   return 0;
 }
@@ -133,9 +133,11 @@ int main(void)
    // crick1 = new Adafruit_Crickit();
   // crick1->set_I2C(&hi2c1);
   neopix1 = new seesaw_NeoPixel();
+  
+  uint8_t i2cscanres = I2C_bus_scan(&hi2c1);
   neopix1->set_I2C(&hi2c1);
-  neopix1->i2c_address_local = I2C_bus_scan() <<1 ;
-  DBG_PRINTF_TRACE("update type");
+  neopix1->i2c_address_local = i2cscanres;
+  DBG_PRINTF_TRACE("update type %d",i2cscanres);
   neopix1->updateType(NEO_GRB + NEO_KHZ800);
   DBG_PRINTF_TRACE("update length");
 

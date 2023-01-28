@@ -137,7 +137,9 @@ int main(void)
   uint8_t i2cscanres = I2C_bus_scan(&hi2c1);
   neopix1->set_I2C(&hi2c1);
   neopix1->i2c_address_local = i2cscanres;
-  DBG_PRINTF_TRACE("update type %d",i2cscanres);
+  neopix1->sendtestbyte();
+  
+  DBG_PRINTF_TRACE("update address %d",i2cscanres);
   neopix1->updateType(NEO_GRB + NEO_KHZ800);
   DBG_PRINTF_TRACE("update length");
 
@@ -165,7 +167,7 @@ int main(void)
 
     HAL_Delay(100);
 
-    if (!(hi2c1.State == HAL_I2C_STATE_BUSY))
+    if ((hi2c1.State != HAL_I2C_STATE_BUSY))
     {
       neopix1->setPixelColor(neopix1->numPixels(), neopix1->Color(123, 10, 10));
       neopix1->show();

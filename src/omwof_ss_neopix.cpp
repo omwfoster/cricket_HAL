@@ -96,10 +96,7 @@ void seesaw_NeoPixel::updateLength(uint16_t n)
 void seesaw_NeoPixel::updateType(neoPixelType t)
 {
 
-  wOffset = (t >> 6) & 0b11; // See notes in header file
-  rOffset = (t >> 4) & 0b11; // regarding R/G/B/W offsets
-  gOffset = (t >> 2) & 0b11;
-  bOffset = t & 0b11;
+ 
   is800KHz = (t < 256); // 400 KHz flag is 1<<8
 
   this->write8(SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_SPEED, is800KHz);

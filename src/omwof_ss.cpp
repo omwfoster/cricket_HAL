@@ -49,22 +49,18 @@ bool Adafruit_seesaw::set_I2C(I2C_HandleTypeDef *hI2c)
 
 { // todo: open i2c channel with cla
   this->hi2c = hI2c;
- 
 
   if ((this->hi2c->State) == HAL_I2C_STATE_READY)
   {
 
-    if(HAL_I2C_EnableListen_IT(hI2c)==HAL_OK)
-    DBG_PRINTF_TRACE("i2c connection ready");
+    if (HAL_I2C_EnableListen_IT(hI2c) == HAL_OK)
+      DBG_PRINTF_TRACE("i2c connection ready");
     return true;
   }
   else
   {
     return false;
   }
-
-
-
 }
 
 /*!
@@ -87,8 +83,8 @@ bool Adafruit_seesaw::begin(uint8_t addr, int8_t flow, bool reset)
   this->hi2c->Devaddress = SEESAW_ADDRESS;
   if (HAL_I2C_IsDeviceReady(this->hi2c, (ui << 1), 10, 0))
   {
-    DBG_PRINTF_TRACE("i2c ready(begin)");
-    
+    DBG_PRINTF_TRACE("seesaw::begin");
+
     return true;
   }
   else
@@ -607,7 +603,6 @@ void Adafruit_seesaw::EEPROMWrite8(uint8_t addr, uint8_t val)
   this->EEPROMWrite(addr, &val, 1);
 }
 
-
 /*!
  *****************************************************************************************
  *  @brief      write a string of bytes to EEPROM starting at the passed address
@@ -816,15 +811,14 @@ bool Adafruit_seesaw::write8(byte regHigh, byte regLow, byte value)
   buf[1] = regLow;
   buf[2] = value;
 
-  if(HAL_I2C_Master_Transmit_IT(this->hi2c, ((uint16_t)this->i2c_address_local<<1), &buf[0], 3)==HAL_OK)
+  if (HAL_I2C_Master_Transmit_IT(this->hi2c, ((uint16_t)this->i2c_address_local << 1), &buf[0], 3) == HAL_OK)
   {
-    DBG_PRINTF_TRACE("transmit byte good",buf);
+    DBG_PRINTF_TRACE("transmit byte good", buf);
     return true;
   }
 
   DBG_PRINTF_TRACE("transmit byte bad");
   return false;
-
 }
 
 /**
@@ -865,7 +859,7 @@ uint8_t Adafruit_seesaw::read8(byte regHigh, byte regLow, uint16_t delay)
 bool Adafruit_seesaw::read(uint8_t regHigh, uint8_t regLow, uint8_t *buf,
                            uint16_t num, uint16_t delay)
 {
-  
+
   uint8_t prefix[2];
   prefix[0] = (uint8_t)regHigh;
   prefix[1] = (uint8_t)regLow;
@@ -874,7 +868,7 @@ bool Adafruit_seesaw::read(uint8_t regHigh, uint8_t regLow, uint8_t *buf,
 
 #ifdef SEESAW_I2C_DEBUG
   DBG_PRINTF_DEBUG("Reading ");
-  
+
   DBG_PRINTF_DEBUG(" bytes");
 #endif
 
@@ -902,7 +896,7 @@ bool Adafruit_seesaw::write(uint8_t regHigh, uint8_t regLow,
   output_string[1] = regLow;
   // TODO : catch buffer overflow if(num< .........
 
-  DBG_PRINTF_TRACE("seesaw::write",0x08,"hoodoo");
+  DBG_PRINTF_TRACE("seesaw::write", 0x08, "hoodoo");
 
   memcpy(buf, &output_string[2], num);
 
@@ -924,7 +918,7 @@ bool Adafruit_seesaw::write(uint8_t regHigh, uint8_t regLow,
  ****************************************************************************************/
 size_t Adafruit_seesaw::write(uint8_t character)
 {
-  DBG_PRINTF_TRACE("write char - ", character );
+  DBG_PRINTF_TRACE("write char - ", character);
   // TODO: add support for multiple sercoms
   this->write8(SEESAW_SERCOM0_BASE, SEESAW_SERCOM_DATA, character);
   // delay(1); // TODO: this can be optimized... it's only needed for longer writes
@@ -953,9 +947,30 @@ size_t Adafruit_seesaw::write(const char *str)
     str++;
     len++;
   }
-  DBG_PRINTF_TRACE("write",str);
+  DBG_PRINTF_TRACE("write", str);
   this->write(SEESAW_SERCOM0_BASE, SEESAW_SERCOM_DATA, buf, len);
   return len;
 }
 
+bool Adafruit_seesaw::sendtestbyte()
+{
 
+  HAL_StatusTypeDef h = HAL_I2C_Master_Transmit(this->hi2c, this->hi2c->Devaddress, 0x00, 0x01, 20);
+  switch (h)
+  {
+  case HAL_OK:
+    DBG_PRINTF_TRACE("HAL_OK");
+    break;
+  case HAL_ERROR:
+    DBG_PRINTF_TRACE("HAL_ERROR");
+    break;
+  case HAL_BUSY:
+    DBG_PRINTF_TRACE("HAL_BUSY");
+    break;
+  case HAL_TIMEOUT:
+    DBG_PRINTF_TRACE("HAL_TIMEOUT");
+    break;
+  default:
+    DBG_PRINTF_TRACE("HAL_I2C_Master_Transmit");
+  }
+}

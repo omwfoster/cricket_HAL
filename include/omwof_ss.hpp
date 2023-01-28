@@ -292,6 +292,7 @@ public:
   bool enableEncoderInterrupt(uint8_t encoder = 0);
   bool disableEncoderInterrupt(uint8_t encoder = 0);
   void setEncoderPosition(int32_t pos, uint8_t encoder = 0);
+  bool sendtestbyte();
 
   virtual size_t write(uint8_t);
   virtual size_t write(const char *str);

@@ -91,6 +91,7 @@ uint8_t I2C_bus_scan(I2C_HandleTypeDef * h_i2c)
     ret = HAL_I2C_IsDeviceReady(h_i2c, (uint16_t)(i << 1), 3, 5);
     if (ret == HAL_OK) /* No ACK Received At That Address */
     {
+      h_i2c->Devaddress = (uint16_t)(i);
       DBG_PRINTF_TRACE("I2C reponse: %d", h_i2c->Devaddress);
       return i;
     }
@@ -136,12 +137,11 @@ int main(void)
   
   uint8_t i2cscanres = I2C_bus_scan(&hi2c1);
   neopix1->set_I2C(&hi2c1);
-  neopix1->i2c_address_local = i2cscanres;
   neopix1->sendtestbyte();
   
   DBG_PRINTF_TRACE("update address %d",i2cscanres);
   neopix1->updateType(NEO_GRB + NEO_KHZ800);
-  DBG_PRINTF_TRACE("update length");
+  
 
   neopix1->updateLength(1);
   neopix1->clear();

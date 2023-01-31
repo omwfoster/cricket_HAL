@@ -60,7 +60,7 @@ bool seesaw_NeoPixel::begin(uint8_t addr, uint16_t numLEDs, int8_t flow)
   {
     return true;
   }
-  if (!Adafruit_seesaw::begin(addr, flow, numLEDs))
+  if (!Adafruit_seesaw::begin(addr<<1, flow, numLEDs))
     return false;
   this->begun = false;
 

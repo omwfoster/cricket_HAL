@@ -55,7 +55,7 @@ I2C_HandleTypeDef hi2c1;
 
 /* USER CODE BEGIN PV */
 static const uint32_t I2C_DELAY = 1000;          // Time (ms) to wait for I2C
-uint8_t crick_i2c_address = 0x37 << 1; // Use 8-bit address
+uint8_t crick_i2c_address = 0x49; // Use 8-bit address
 
 Adafruit_Crickit *crick1;
 seesaw_NeoPixel *neopix1;
@@ -88,11 +88,11 @@ uint8_t I2C_bus_scan(I2C_HandleTypeDef * h_i2c)
   uint8_t i;
   for (i = 1; i < 128; i++)
   {
-    ret = HAL_I2C_IsDeviceReady(h_i2c, (uint16_t)(i << 1), 3, 5);
+    ret = HAL_I2C_IsDeviceReady(h_i2c, (uint16_t)(i<<1), 3, 5);
     if (ret == HAL_OK) /* No ACK Received At That Address */
     {
       h_i2c->Devaddress = (uint16_t)(i);
-      DBG_PRINTF_TRACE("I2C reponse: %d", h_i2c->Devaddress);
+      DBG_PRINTF_TRACE("I2C reponse: %d", i);
       return i;
     }
    DBG_PRINTF_TRACE("I2C reponse bad: %d", i);
@@ -137,7 +137,8 @@ int main(void)
   
   uint8_t i2cscanres = I2C_bus_scan(&hi2c1);
   neopix1->set_I2C(&hi2c1);
-  neopix1->sendtestbyte();
+  neopix1->i2c_address_local = i2cscanres;
+  neopix1->sendtestbyte(i2cscanres);
   
   DBG_PRINTF_TRACE("update address %d",i2cscanres);
   neopix1->updateType(NEO_GRB + NEO_KHZ800);

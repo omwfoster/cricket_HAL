@@ -292,7 +292,7 @@ public:
   bool enableEncoderInterrupt(uint8_t encoder = 0);
   bool disableEncoderInterrupt(uint8_t encoder = 0);
   void setEncoderPosition(int32_t pos, uint8_t encoder = 0);
-  bool sendtestbyte();
+  bool sendtestbyte(uint8_t);
 
   virtual size_t write(uint8_t);
   virtual size_t write(const char *str);
@@ -302,12 +302,6 @@ public:
 protected:
 
   int8_t _flow; /*!< The flow control pin to use */
-  
-  
-
- 
-
-  
 
   uint8_t _hardwaretype = 0; /*!< what hardware type is attached! */
 

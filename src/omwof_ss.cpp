@@ -896,11 +896,9 @@ bool Adafruit_seesaw::write(uint8_t regHigh, uint8_t regLow,
   output_string[1] = regLow;
   // TODO : catch buffer overflow if(num< .........
 
-  DBG_PRINTF_TRACE("seesaw::write", 0x08, "hoodoo");
-
   memcpy(buf, &output_string[2], num);
 
-  HAL_I2C_Master_Transmit_IT(this->hi2c, (uint16_t)SEESAW_ADDRESS, &output_string[0], num + 2);
+  HAL_I2C_Master_Transmit_IT(this->hi2c, ((this->i2c_address_local) << 1), &output_string[0], num + 2);
   DBG_PRINTF_TRACE("HAL_I2C_Master_Transmit");
   return true;
 }
@@ -952,14 +950,17 @@ size_t Adafruit_seesaw::write(const char *str)
   return len;
 }
 
-bool Adafruit_seesaw::sendtestbyte()
+bool Adafruit_seesaw::sendtestbyte(uint8_t destination)
 {
 
-  DBG_PRINTF_TRACE("testbyte address %d",((uint16_t)(this->hi2c->Devaddress)<<1));
-  while(HAL_I2C_IsDeviceReady(this->hi2c,(((uint16_t)(this->hi2c->Devaddress))<<1),5,20) != HAL_OK){}
+  DBG_PRINTF_TRACE("testbyte address %d", (uint8_t)destination);
+  // while(HAL_I2C_IsDeviceReady(this->hi2c,((uint16_t)destination<<1),5,20) != HAL_OK){}
 
-  DBG_PRINTF_TRACE("testbyte");
-  HAL_StatusTypeDef h = HAL_I2C_Master_Transmit(this->hi2c, this->hi2c->Devaddress, 0x00, 0x01, 20);
+  HAL_StatusTypeDef h = HAL_I2C_Master_Transmit(this->hi2c, ((uint16_t)destination << 1), 0x00, 0x01, 20);
+  if (h == HAL_BUSY)
+  {
+    DBG_PRINTF_TRACE("testbyte HAL_BUSY %d", h);
+  }
   switch (h)
   {
   case HAL_OK:

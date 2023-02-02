@@ -69,10 +69,10 @@ extern int debug_print_callback(char *debugMessage, unsigned int length);
 /////////////////////////////////////////
 
 #if DBG_PRINT_ENABLED
-#define DBG_PRINTF_DEBUG(fmt, ...) debug_printf_ln(ANSI_COLOR_GREEN, __FILE__, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
-#define DBG_PRINTF_TRACE(fmt, ...) debug_printf_ln(ANSI_COLOR_WHITE, __FILE__, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
-#define DBG_PRINTF_WARNING(fmt, ...) debug_printf_ln(ANSI_COLOR_YELLOW, __FILE__, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
-#define DBG_PRINTF_ERROR(fmt, ...) debug_printf_ln(ANSI_COLOR_RED, __FILE__, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
+#define DBG_PRINTF_DEBUG(fmt, ...) debug_printf_ln( __FILE__, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
+#define DBG_PRINTF_TRACE(fmt, ...) debug_printf_ln(__FILE__, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
+#define DBG_PRINTF_WARNING(fmt, ...) debug_printf_ln( __FILE__, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
+#define DBG_PRINTF_ERROR(fmt, ...) debug_printf_ln( __FILE__, __FUNCTION__, __LINE__, fmt, ##__VA_ARGS__)
 #else
 #define DBG_PRINTF_DEBUG(fmt, ...)
 #define DBG_PRINTF_TRACE(fmt, ...)
@@ -89,13 +89,13 @@ extern "C"
 * \brief Debug-print a parameterized text.
 *        This function adds the Windows style CR+LF to the end.
 */
-int debug_printf_ln(const char *color, const char *fileName, const char *funcName, unsigned int lineNumber, const char *fmt, ...);
+int debug_printf_ln(const char *fileName, const char *funcName, unsigned int lineNumber, const char *fmt, ...);
 
 /**
 * \brief Debug-print a parameterized text.
 *        This function doesn't add the Windows style CR+LF to the end.
 */
-int debug_printf(const char *color, const char *fileName, const char *funcName, unsigned int lineNumber, const char *fmt, ...);
+int debug_printf(const char *fileName, const char *funcName, unsigned int lineNumber, const char *fmt, ...);
 
 
 #ifdef __cplusplus

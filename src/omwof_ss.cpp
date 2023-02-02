@@ -950,31 +950,35 @@ size_t Adafruit_seesaw::write(const char *str)
   return len;
 }
 
+
+
+
 bool Adafruit_seesaw::sendtestbyte(uint8_t destination)
 {
 
   DBG_PRINTF_TRACE("testbyte address %d", (uint8_t)destination);
   // while(HAL_I2C_IsDeviceReady(this->hi2c,((uint16_t)destination<<1),5,20) != HAL_OK){}
 
-  HAL_StatusTypeDef h = HAL_I2C_Master_Transmit(this->hi2c, ((uint16_t)destination << 1), 0x00, 0x01, 20);
-  if (h == HAL_BUSY)
+  if(this->hi2c->State == HAL_BUSY)
   {
-    DBG_PRINTF_TRACE("testbyte HAL_BUSY %d", h);
+    return false;
   }
+  HAL_StatusTypeDef h = HAL_I2C_Master_Transmit(this->hi2c, ((uint16_t)destination << 1), 0x00, 0x01, 20);
+  this->digitalWrite(0x2,0x1);
   switch (h)
   {
   case HAL_OK:
     DBG_PRINTF_TRACE("HAL_OK");
-    break;
+    return true;
   case HAL_ERROR:
     DBG_PRINTF_TRACE("HAL_ERROR");
-    break;
+    return true;
   case HAL_BUSY:
     DBG_PRINTF_TRACE("HAL_BUSY");
-    break;
+    return true;
   case HAL_TIMEOUT:
     DBG_PRINTF_TRACE("HAL_TIMEOUT");
-    break;
+    return true;
   default:
     DBG_PRINTF_TRACE("HAL_UNDEFINED");
   }

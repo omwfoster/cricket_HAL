@@ -94,7 +94,6 @@ uint8_t I2C_bus_scan(I2C_HandleTypeDef * h_i2c)
       DBG_PRINTF_TRACE("I2C reponse: %d", i);
       return i;
     }
-   DBG_PRINTF_TRACE("I2C reponse bad: %d", i);
   }
   return 0;
 }

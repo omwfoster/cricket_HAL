@@ -10,7 +10,7 @@
 
 #include <debug_print.h>
 
-int debug_printf_ln(const char *color, const char *fileName, const char *funcName, unsigned int lineNumber, const char *fmt, ...)
+int debug_printf_ln(const char *fileName, const char *funcName, unsigned int lineNumber, const char *fmt, ...)
 {
     char parameterBuffer[DGB_PRINT_BUFFER_SIZE] = {0};
     char outgoingBuffer[DGB_PRINT_BUFFER_SIZE] = {0};
@@ -20,7 +20,7 @@ int debug_printf_ln(const char *color, const char *fileName, const char *funcNam
     vsnprintf(parameterBuffer, DGB_PRINT_BUFFER_SIZE, fmt, params);
     va_end(params);
 
-    int ret = snprintf(outgoingBuffer, DGB_PRINT_BUFFER_SIZE, "%s[%s:%s():%u]: %s%s", color, fileName, funcName, lineNumber, parameterBuffer, ANSI_COLOR_RESET DBG_PRINT_NEWLINE);
+    int ret = snprintf(outgoingBuffer, DGB_PRINT_BUFFER_SIZE, "[%s:%s():%u]: %s%s", fileName, funcName, lineNumber, parameterBuffer, ANSI_COLOR_RESET DBG_PRINT_NEWLINE);
     if (ret < 0)
     {
         return DBG_PRINT_BUFFER_TOO_SMALL;

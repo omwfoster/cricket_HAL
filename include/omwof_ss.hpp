@@ -6,21 +6,18 @@
 #include <stm32f4xx_hal.h>
 #include "debug_print.h"
 
-
 #define byte uint8_t
-#define COUNTOF(__BUFFER__)   (sizeof(__BUFFER__) / sizeof(*(__BUFFER__)))
+#define COUNTOF(__BUFFER__) (sizeof(__BUFFER__) / sizeof(*(__BUFFER__)))
 #define SEESAW_I2C_DEBUG
-
-
 
 /*=========================================================================
     I2C ADDRESS/BITS
     -----------------------------------------------------------------------*/
 #define SEESAW_ADDRESS (0x49) ///< Default Seesaw I2C address
 
-#define TXBUFFERSIZE                      (COUNTOF(aTxBuffer) - 1)
+#define TXBUFFERSIZE (COUNTOF(aTxBuffer) - 1)
 /* Size of Reception buffer */
-#define RXBUFFERSIZE                      TXBUFFERSIZE
+#define RXBUFFERSIZE TXBUFFERSIZE
 /*=========================================================================*/
 
 /*=========================================================================
@@ -30,7 +27,8 @@
 /** Module Base Addreses
  *  The module base addresses for different seesaw modules.
  */
-enum {
+enum
+{
   SEESAW_STATUS_BASE = 0x00,
   SEESAW_GPIO_BASE = 0x01,
   SEESAW_SERCOM0_BASE = 0x02,
@@ -50,7 +48,8 @@ enum {
 
 /** GPIO module function address registers
  */
-enum {
+enum
+{
   SEESAW_GPIO_DIRSET_BULK = 0x02,
   SEESAW_GPIO_DIRCLR_BULK = 0x03,
   SEESAW_GPIO_BULK = 0x04,
@@ -66,7 +65,8 @@ enum {
 
 /** status module function address registers
  */
-enum {
+enum
+{
   SEESAW_STATUS_HW_ID = 0x01,
   SEESAW_STATUS_VERSION = 0x02,
   SEESAW_STATUS_OPTIONS = 0x03,
@@ -76,7 +76,8 @@ enum {
 
 /** timer module function address registers
  */
-enum {
+enum
+{
   SEESAW_TIMER_STATUS = 0x00,
   SEESAW_TIMER_PWM = 0x01,
   SEESAW_TIMER_FREQ = 0x02,
@@ -84,7 +85,8 @@ enum {
 
 /** ADC module function address registers
  */
-enum {
+enum
+{
   SEESAW_ADC_STATUS = 0x00,
   SEESAW_ADC_INTEN = 0x02,
   SEESAW_ADC_INTENCLR = 0x03,
@@ -95,7 +97,8 @@ enum {
 
 /** Sercom module function address registers
  */
-enum {
+enum
+{
   SEESAW_SERCOM_STATUS = 0x00,
   SEESAW_SERCOM_INTEN = 0x02,
   SEESAW_SERCOM_INTENCLR = 0x03,
@@ -105,7 +108,8 @@ enum {
 
 /** neopixel module function address registers
  */
-enum {
+enum
+{
   SEESAW_NEOPIXEL_STATUS = 0x00,
   SEESAW_NEOPIXEL_PIN = 0x01,
   SEESAW_NEOPIXEL_SPEED = 0x02,
@@ -116,13 +120,15 @@ enum {
 
 /** touch module function address registers
  */
-enum {
+enum
+{
   SEESAW_TOUCH_CHANNEL_OFFSET = 0x10,
 };
 
 /** keypad module function address registers
  */
-enum {
+enum
+{
   SEESAW_KEYPAD_STATUS = 0x00,
   SEESAW_KEYPAD_EVENT = 0x01,
   SEESAW_KEYPAD_INTENSET = 0x02,
@@ -133,7 +139,8 @@ enum {
 
 /** keypad module edge definitions
  */
-enum {
+enum
+{
   SEESAW_KEYPAD_EDGE_HIGH = 0,
   SEESAW_KEYPAD_EDGE_LOW,
   SEESAW_KEYPAD_EDGE_FALLING,
@@ -142,7 +149,8 @@ enum {
 
 /** encoder module edge definitions
  */
-enum {
+enum
+{
   SEESAW_ENCODER_STATUS = 0x00,
   SEESAW_ENCODER_INTENSET = 0x10,
   SEESAW_ENCODER_INTENCLR = 0x20,
@@ -152,7 +160,8 @@ enum {
 
 /** Audio spectrum module function address registers
  */
-enum {
+enum
+{
   SEESAW_SPECTRUM_RESULTS_LOWER = 0x00, // Audio spectrum bins 0-31
   SEESAW_SPECTRUM_RESULTS_UPPER = 0x01, // Audio spectrum bins 32-63
   // If some future device supports a larger spectrum, can add additional
@@ -175,7 +184,7 @@ enum {
 #define PWM_3_PIN 7 ///< default PWM output pin
 
 #ifndef INPUT_PULLDOWN
-#define INPUT_PULLDOWN                                                         \
+#define INPUT_PULLDOWN \
   0x03 ///< for compatibility with platforms that do not already define
        ///< INPUT_PULLDOWN
 #endif
@@ -186,13 +195,15 @@ enum {
 
 #define SEESAW_HW_ID_CODE_TINY8X7 0x87 ///< seesaw HW ID code for ATtiny817
 
-#define SEESAW_EEPROM_I2C_ADDR                                                 \
+#define SEESAW_EEPROM_I2C_ADDR \
   0x3F ///< EEPROM address of i2c address to start up with (for devices that
        ///< support this feature)
 
 /** raw key event stucture for keypad module */
-union keyEventRaw {
-  struct {
+union keyEventRaw
+{
+  struct
+  {
     uint8_t EDGE : 2; ///< the edge that was triggered
     uint8_t NUM : 6;  ///< the event number
   } bit;              ///< bitfield format
@@ -200,8 +211,10 @@ union keyEventRaw {
 };
 
 /** extended key event stucture for keypad module */
-union keyEvent {
-  struct {
+union keyEvent
+{
+  struct
+  {
     uint8_t EDGE : 2;  ///< the edge that was triggered
     uint16_t NUM : 14; ///< the event number
   } bit;               ///< bitfield format
@@ -209,8 +222,10 @@ union keyEvent {
 };
 
 /** key state struct that will be written to seesaw chip keypad module */
-union keyState {
-  struct {
+union keyState
+{
+  struct
+  {
     uint8_t STATE : 1;  ///< the current state of the key
     uint8_t ACTIVE : 4; ///< the registered events for that key
   } bit;                ///< bitfield format
@@ -225,11 +240,12 @@ union keyState {
 /**************************************************************************/
 class Print
 {
-  public:
+public:
   Print();
   ~Print(void){};
 };
-class Adafruit_seesaw : public Print {
+class Adafruit_seesaw : public Print
+{
 public:
   // constructors
   Adafruit_seesaw();
@@ -237,7 +253,7 @@ public:
 
   bool begin(uint8_t addr = SEESAW_ADDRESS, int8_t flow = -1,
              bool reset = true);
-  bool set_I2C(I2C_HandleTypeDef * h_I2C); 
+  bool set_I2C(I2C_HandleTypeDef *h_I2C);
   uint32_t getOptions();
   uint32_t getVersion();
   bool getProdDatecode(uint16_t *pid, uint8_t *year, uint8_t *mon,
@@ -297,10 +313,9 @@ public:
   virtual size_t write(uint8_t);
   virtual size_t write(const char *str);
   uint8_t i2c_address_local;
-  I2C_HandleTypeDef * hi2c;
+  I2C_HandleTypeDef *hi2c;
 
 protected:
-
   int8_t _flow; /*!< The flow control pin to use */
 
   uint8_t _hardwaretype = 0; /*!< what hardware type is attached! */
@@ -311,17 +326,18 @@ protected:
   bool read(uint8_t regHigh, uint8_t regLow, uint8_t *buf, uint16_t num,
             uint16_t delay = 250);
   bool write(uint8_t regHigh, uint8_t regLow, uint8_t *buf, uint16_t num);
+  bool parse_hal_return(HAL_I2C_StateTypeDef destination);
 
+      /*=========================================================================
+              REGISTER BITFIELDS
+          -----------------------------------------------------------------------*/
 
-
-  /*=========================================================================
-          REGISTER BITFIELDS
-      -----------------------------------------------------------------------*/
-
-  /** Sercom interrupt enable register
-   */
-  union sercom_inten {
-    struct {
+      /** Sercom interrupt enable register
+       */
+      union sercom_inten
+  {
+    struct
+    {
       uint8_t DATA_RDY : 1; ///< this bit is set when data becomes available
     } bit;                  ///< bitfields
     uint8_t reg;            ///< full register

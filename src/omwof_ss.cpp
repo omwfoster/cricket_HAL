@@ -950,21 +950,20 @@ size_t Adafruit_seesaw::write(const char *str)
   return len;
 }
 
-
-
-
 bool Adafruit_seesaw::sendtestbyte(uint8_t destination)
 {
 
-  DBG_PRINTF_TRACE("testbyte address %d", (uint8_t)destination);
+  DBG_PRINTF_TRACE("testbyte address %d", destination);
   // while(HAL_I2C_IsDeviceReady(this->hi2c,((uint16_t)destination<<1),5,20) != HAL_OK){}
+  uint8_t test_byte = 0;
+  
+  HAL_StatusTypeDef h;
+  parse_hal_return(HAL_I2C_GetState(this->hi2c));
 
-  if(this->hi2c->State == HAL_BUSY)
-  {
-    return false;
-  }
-  HAL_StatusTypeDef h = HAL_I2C_Master_Transmit(this->hi2c, ((uint16_t)destination << 1), 0x00, 0x01, 20);
-  this->digitalWrite(0x2,0x1);
+ 
+
+  h = HAL_I2C_Master_Transmit_IT(this->hi2c, ((uint16_t)destination << 1), &test_byte, 0x01);
+  this->digitalWrite(0x2, 0x1);
   switch (h)
   {
   case HAL_OK:
@@ -981,5 +980,46 @@ bool Adafruit_seesaw::sendtestbyte(uint8_t destination)
     return true;
   default:
     DBG_PRINTF_TRACE("HAL_UNDEFINED");
+  }
+}
+
+bool Adafruit_seesaw::parse_hal_return(HAL_I2C_StateTypeDef destination)
+{
+  switch (destination)
+  {
+  case HAL_I2C_STATE_RESET: // = 0x00U,   /*!< Peripheral is not yet Initialized
+    DBG_PRINTF_TRACE("HAL_I2C_STATE_RESET");
+    return true;
+  case HAL_I2C_STATE_READY: // = 0x20U,   /*!< Peripheral Initialized and ready for use
+    DBG_PRINTF_TRACE("HAL_I2C_STATE_READY");
+    return true;
+  case HAL_I2C_STATE_BUSY: // = 0x24U,   /*!< An internal process is ongoing
+    DBG_PRINTF_TRACE("HAL_I2C_STATE_BUSY");
+    return true;
+  case HAL_I2C_STATE_BUSY_TX: // = 0x21U,   /*!< Data Transmission process is ongoing
+    DBG_PRINTF_TRACE("HAL_I2C_STATE_BUSY_TX");
+    return true;
+  case HAL_I2C_STATE_BUSY_RX: // = 0x22U,   /*!< Data Reception process is ongoing
+    DBG_PRINTF_TRACE("HAL_I2C_STATE_BUSY_RX");
+    return true;
+  case HAL_I2C_STATE_LISTEN: // = 0x28U,   /*!< Address Listen Mode is ongoing
+    DBG_PRINTF_TRACE("HAL_I2C_STATE_LISTEN");
+    return true;
+  case HAL_I2C_STATE_BUSY_TX_LISTEN: // = 0x29U,   /*!< Address Listen Mode and Data Transmission
+    DBG_PRINTF_TRACE("HAL_I2C_STATE_BUSY_TX_LISTEN");
+    return true;
+  case HAL_I2C_STATE_BUSY_RX_LISTEN: // = 0x2AU,   /*!< Address Listen Mode and Data Reception
+    DBG_PRINTF_TRACE("HAL_I2C_STATE_BUSY_RX_LISTEN");
+    return true;
+  case HAL_I2C_STATE_ABORT: // = 0x60U,   /*!< Abort user request ongoing
+    DBG_PRINTF_TRACE("HAL_I2C_STATE_ABORT");
+    return true;
+  case HAL_I2C_STATE_TIMEOUT: // = 0xA0U,   /*!< Timeout state
+    DBG_PRINTF_TRACE("HAL_I2C_STATE_TIMEOUT");
+    return true;
+  case HAL_I2C_STATE_ERROR:
+    return true;
+  default:
+    return true;
   }
 }

@@ -112,12 +112,10 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c)
     GPIO_InitStruct.Alternate = GPIO_AF4_I2C1;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-    /* Peripheral clock enable */
-    __HAL_RCC_I2C1_CLK_ENABLE();
-    /* USER CODE BEGIN I2C1_MspInit 1 */
+  
 
     hi2c->Instance = I2C1;
-    hi2c->Init.ClockSpeed = 100000;
+    hi2c->Init.ClockSpeed = 400000;
     hi2c->Init.DutyCycle = I2C_DUTYCYCLE_2;
     hi2c->Init.OwnAddress1 = 13;
     hi2c->Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;

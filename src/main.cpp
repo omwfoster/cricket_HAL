@@ -64,7 +64,7 @@ seesaw_NeoPixel *neopix1;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_I2C1_Init(void);
+
 /* USER CODE BEGIN PFP */
 
 void BlinkLED(uint32_t blink_delay, uint8_t num_blinks);
@@ -125,14 +125,10 @@ int main(void)
   MX_USB_DEVICE_Init();
   HAL_Delay(3000);
   DBG_PRINTF_DEBUG("USB init");
+  neopix1 = new seesaw_NeoPixel();
 
   HAL_I2C_MspInit(&hi2c1);
-  
-  
-  
-   // crick1 = new Adafruit_Crickit();
-  // crick1->set_I2C(&hi2c1);
-  neopix1 = new seesaw_NeoPixel();
+
   
   uint8_t i2cscanres = I2C_bus_scan(&hi2c1);
   neopix1->set_I2C(&hi2c1);

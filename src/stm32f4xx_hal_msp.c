@@ -22,6 +22,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.hpp"
 #include "defines.h"
+#include "debug_print.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -103,7 +104,7 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c)
     /* USER CODE END I2C1_MspInit 0 */
 
     __HAL_RCC_GPIOB_CLK_ENABLE();
-   
+
     GPIO_InitStruct.Pin = GPIO_PIN_6 | GPIO_PIN_7;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
@@ -115,15 +116,29 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c)
     __HAL_RCC_I2C1_CLK_ENABLE();
     /* USER CODE BEGIN I2C1_MspInit 1 */
 
-    
-
-    HAL_NVIC_SetPriority(I2Cx_ER_IRQn, 0, 1);
-    HAL_NVIC_EnableIRQ(I2Cx_ER_IRQn);
-    HAL_NVIC_SetPriority(I2Cx_EV_IRQn, 0, 2);
-    HAL_NVIC_EnableIRQ(I2Cx_EV_IRQn);
-
-    /* USER CODE END I2C1_MspInit 1 */
+    hi2c->Instance = I2C1;
+    hi2c->Init.ClockSpeed = 100000;
+    hi2c->Init.DutyCycle = I2C_DUTYCYCLE_2;
+    hi2c->Init.OwnAddress1 = 13;
+    hi2c->Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+    hi2c->Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+    hi2c->Init.OwnAddress2 = 0;
+    hi2c->Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+    hi2c->Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+    if (HAL_I2C_Init(hi2c) != HAL_OK)
+    {
+      DBG_PRINTF_TRACE("i2c error : %d", hi2c->Init.OwnAddress1);
+      Error_Handler();
+    }
   }
+
+  HAL_NVIC_SetPriority(I2Cx_ER_IRQn, 0, 1);
+  HAL_NVIC_EnableIRQ(I2Cx_ER_IRQn);
+  HAL_NVIC_SetPriority(I2Cx_EV_IRQn, 0, 2);
+  HAL_NVIC_EnableIRQ(I2Cx_EV_IRQn);
+  /* USER CODE BEGIN I2C1_Init 2 */
+  DBG_PRINTF_TRACE("i2c success");
+  /* USER CODE END I2C1_Init 2 */
 }
 
 /**

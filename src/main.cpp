@@ -127,7 +127,7 @@ int main(void)
   DBG_PRINTF_DEBUG("USB init");
 
   HAL_I2C_MspInit(&hi2c1);
-  MX_I2C1_Init();
+  
   
   
    // crick1 = new Adafruit_Crickit();
@@ -240,34 +240,7 @@ void SystemClock_Config(void)
  * @param None
  * @retval None
  */
-static void MX_I2C1_Init(void)
-{
 
-  /* USER CODE BEGIN I2C1_Init 0 */
-
-  /* USER CODE END I2C1_Init 0 */
-
-  /* USER CODE BEGIN I2C1_Init 1 */
-
-  /* USER CODE END I2C1_Init 1 */
-  hi2c1.Instance = I2C1;
-  hi2c1.Init.ClockSpeed = 100000;
-  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
-  hi2c1.Init.OwnAddress1 = 13;
-  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c1.Init.OwnAddress2 = 0;
-  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
-  {
-    DBG_PRINTF_TRACE("i2c error", "0x%X", hi2c1.Init.OwnAddress1);
-    Error_Handler();
-  }
-  /* USER CODE BEGIN I2C1_Init 2 */
-  DBG_PRINTF_TRACE("i2c success");
-  /* USER CODE END I2C1_Init 2 */
-}
 
 /**
  * @brief GPIO Initialization Function

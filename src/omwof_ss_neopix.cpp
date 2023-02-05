@@ -134,7 +134,6 @@ void seesaw_NeoPixel::show(void)
 // Set the output pin number
 void seesaw_NeoPixel::setPin(uint8_t p)
 {
-
   DBG_PRINTF_DEBUG("neopixel::setpin pre");
   this->write8(SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_PIN, p);
   DBG_PRINTF_DEBUG("neopixel::setpin post");

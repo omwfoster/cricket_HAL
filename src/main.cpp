@@ -129,6 +129,7 @@ int main(void)
   HAL_I2C_MspInit(&hi2c1);
   MX_I2C1_Init();
   
+  
    // crick1 = new Adafruit_Crickit();
   // crick1->set_I2C(&hi2c1);
   neopix1 = new seesaw_NeoPixel();
@@ -136,6 +137,7 @@ int main(void)
   uint8_t i2cscanres = I2C_bus_scan(&hi2c1);
   neopix1->set_I2C(&hi2c1);
   neopix1->i2c_address_local = i2cscanres;
+  
   neopix1->sendtestbyte(i2cscanres);
   
   DBG_PRINTF_TRACE("update address %d",i2cscanres);

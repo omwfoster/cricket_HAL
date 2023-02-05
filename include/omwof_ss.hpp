@@ -326,7 +326,8 @@ protected:
   bool read(uint8_t regHigh, uint8_t regLow, uint8_t *buf, uint16_t num,
             uint16_t delay = 250);
   bool write(uint8_t regHigh, uint8_t regLow, uint8_t *buf, uint16_t num);
-  bool parse_hal_return(HAL_I2C_StateTypeDef destination);
+  bool parse_HAL_StatusTypeDef(HAL_StatusTypeDef );
+  bool parse_HAL_I2C_StateTypeDef(HAL_I2C_StateTypeDef );
 
       /*=========================================================================
               REGISTER BITFIELDS

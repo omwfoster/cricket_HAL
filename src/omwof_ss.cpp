@@ -954,16 +954,17 @@ bool Adafruit_seesaw::sendtestbyte(uint8_t destination)
 {
 
   DBG_PRINTF_TRACE("testbyte address %d", destination);
-  // while(HAL_I2C_IsDeviceReady(this->hi2c,((uint16_t)destination<<1),5,20) != HAL_OK){}
   uint8_t test_byte = 0;
   
-  HAL_StatusTypeDef h;
-  parse_hal_return(HAL_I2C_GetState(this->hi2c));
+  HAL_Delay(100);
+  parse_HAL_I2C_StateTypeDef(HAL_I2C_GetState(this->hi2c));
+  HAL_Delay(100);
+  parse_HAL_StatusTypeDef(HAL_I2C_Master_Transmit_IT(this->hi2c, ((uint16_t)destination << 1), &test_byte, 0x01));
+  
+}
 
- 
-
-  h = HAL_I2C_Master_Transmit_IT(this->hi2c, ((uint16_t)destination << 1), &test_byte, 0x01);
-  this->digitalWrite(0x2, 0x1);
+bool Adafruit_seesaw::parse_HAL_StatusTypeDef(HAL_StatusTypeDef h)
+{
   switch (h)
   {
   case HAL_OK:
@@ -983,9 +984,10 @@ bool Adafruit_seesaw::sendtestbyte(uint8_t destination)
   }
 }
 
-bool Adafruit_seesaw::parse_hal_return(HAL_I2C_StateTypeDef destination)
+
+bool Adafruit_seesaw::parse_HAL_I2C_StateTypeDef(HAL_I2C_StateTypeDef h)
 {
-  switch (destination)
+  switch (h)
   {
   case HAL_I2C_STATE_RESET: // = 0x00U,   /*!< Peripheral is not yet Initialized
     DBG_PRINTF_TRACE("HAL_I2C_STATE_RESET");
@@ -1020,6 +1022,6 @@ bool Adafruit_seesaw::parse_hal_return(HAL_I2C_StateTypeDef destination)
   case HAL_I2C_STATE_ERROR:
     return true;
   default:
-    return true;
+    return false;
   }
 }

@@ -54,8 +54,8 @@
 I2C_HandleTypeDef hi2c1;
 
 /* USER CODE BEGIN PV */
-static const uint32_t I2C_DELAY = 1000;          // Time (ms) to wait for I2C
-uint8_t crick_i2c_address = 0x49; // Use 8-bit address
+static const uint32_t I2C_DELAY = 1000; // Time (ms) to wait for I2C
+uint8_t crick_i2c_address = 0x49;       // Use 8-bit address
 
 Adafruit_Crickit *crick1;
 seesaw_NeoPixel *neopix1;
@@ -64,6 +64,8 @@ seesaw_NeoPixel *neopix1;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+void init_I2C1(void);
+uint8_t I2C_bus_scan(I2C_HandleTypeDef *);
 
 /* USER CODE BEGIN PFP */
 
@@ -81,13 +83,43 @@ void BlinkLED(uint32_t blink_delay, uint8_t num_blinks);
  * @retval int
  */
 
-uint8_t I2C_bus_scan(I2C_HandleTypeDef * h_i2c)
+void init_I2C1(void)
+{
+  GPIO_InitTypeDef GPIO_InitStruct;
+
+  /* Peripheral clock enable */
+  __HAL_RCC_I2C1_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.OwnAddress1 = 0x00;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0x00;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  HAL_I2C_Init(&hi2c1);
+
+  GPIO_InitStruct.Pin = GPIO_PIN_6 | GPIO_PIN_7;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.Alternate = GPIO_AF4_I2C1;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    DBG_PRINTF_TRACE("i2c error : %d", hi2c1.Init.OwnAddress1);
+    Error_Handler();
+  }
+  DBG_PRINTF_TRACE("i2c NO error : %d", hi2c1.Init.OwnAddress1);
+}
+uint8_t I2C_bus_scan(I2C_HandleTypeDef *h_i2c)
 {
   HAL_StatusTypeDef ret;
   uint8_t i;
   for (i = 1; i < 128; i++)
   {
-    ret = HAL_I2C_IsDeviceReady(h_i2c, (uint16_t)(i<<1), 3, 5);
+    ret = HAL_I2C_IsDeviceReady(h_i2c, (uint16_t)(i << 1), 3, 5);
     if (ret == HAL_OK) /* No ACK Received At That Address */
     {
       h_i2c->Devaddress = (uint16_t)(i);
@@ -95,6 +127,7 @@ uint8_t I2C_bus_scan(I2C_HandleTypeDef * h_i2c)
       return i;
     }
   }
+  DBG_PRINTF_TRACE("I2C NO reponse: %d", i);
   return 0;
 }
 int main(void)
@@ -127,22 +160,21 @@ int main(void)
   DBG_PRINTF_DEBUG("USB init");
   neopix1 = new seesaw_NeoPixel();
 
-  HAL_I2C_MspInit(&hi2c1);
+  // HAL_I2C_MspInit(&hi2c1);
+  init_I2C1();
 
-  
   uint8_t i2cscanres = I2C_bus_scan(&hi2c1);
   neopix1->set_I2C(&hi2c1);
   neopix1->i2c_address_local = i2cscanres;
-  
+
   neopix1->sendtestbyte(i2cscanres);
-  
-  DBG_PRINTF_TRACE("update address %d",i2cscanres);
+
+  DBG_PRINTF_TRACE("update address %d", i2cscanres);
   neopix1->updateType(NEO_GRB + NEO_KHZ800);
-  
 
   neopix1->updateLength(1);
   neopix1->clear();
-  neopix1->setPin((uint8_t)27 << 1); 
+  neopix1->setPin((uint8_t)27 << 1);
 
   BlinkLED(100, 3);
   // crick1->begin(CRICK_I2C_ADDR,-1,true);
@@ -237,7 +269,6 @@ void SystemClock_Config(void)
  * @retval None
  */
 
-
 /**
  * @brief GPIO Initialization Function
  * @param None
@@ -252,7 +283,6 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
-  
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
@@ -269,14 +299,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  
-
-
-
-
-
-  
 }
 
 /* USER CODE BEGIN 4 */

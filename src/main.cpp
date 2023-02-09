@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "main.hpp"
+#include "omwof_helper.h"
 #include "usb_device.h"
 #include "usbd_cdc_if.h"
 #include "debug_print.h"
@@ -92,10 +93,11 @@ void init_I2C1(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   hi2c1.Instance = I2C1;
-  hi2c1.Init.OwnAddress1 = 0x00;
+  hi2c1.Init.ClockSpeed=100000;
+  hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c1.Init.OwnAddress2 = 0x00;
+  hi2c1.Init.OwnAddress2 = 0;
   hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
   hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
   HAL_I2C_Init(&hi2c1);
@@ -112,6 +114,7 @@ void init_I2C1(void)
     Error_Handler();
   }
   DBG_PRINTF_TRACE("i2c NO error : %d", hi2c1.Init.OwnAddress1);
+  HAL_NVIC_EnableIRQ(I2C1_EV_IRQn);
 }
 uint8_t I2C_bus_scan(I2C_HandleTypeDef *h_i2c)
 {
@@ -154,6 +157,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  uint8_t wheel_pos = 0;
 
   MX_USB_DEVICE_Init();
   HAL_Delay(3000);
@@ -162,6 +166,7 @@ int main(void)
 
   // HAL_I2C_MspInit(&hi2c1);
   init_I2C1();
+
 
   uint8_t i2cscanres = I2C_bus_scan(&hi2c1);
   neopix1->set_I2C(&hi2c1);
@@ -173,12 +178,12 @@ int main(void)
   neopix1->updateType(NEO_GRB + NEO_KHZ800);
 
   neopix1->updateLength(1);
-  neopix1->clear();
+  //neopix1->clear();
   neopix1->setPin((uint8_t)27 << 1);
 
   BlinkLED(100, 3);
   // crick1->begin(CRICK_I2C_ADDR,-1,true);
-  neopix1->begin(crick_i2c_address, -1, true);
+  neopix1->begin(i2cscanres, -1, true);
 
   /* USER CODE BEGIN 2 */
 
@@ -198,8 +203,10 @@ int main(void)
 
     if ((hi2c1.State != HAL_I2C_STATE_BUSY))
     {
-      neopix1->setPixelColor(neopix1->numPixels(), neopix1->Color(123, 10, 10));
+      wheel_pos < 0xff ? wheel_pos++ : 0;
+      neopix1->setPixelColor((neopix1->numPixels()-1), neopix1->Wheel(wheel_pos));
       neopix1->show();
+      neopix1->digitalWrite(CRICKIT_SIGNAL3,HIGH);
 
       DBG_PRINTF_DEBUG("pixel output");
     }
@@ -323,12 +330,12 @@ int debug_print_callback(char *debugMessage, unsigned int length)
 
 void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c1)
 {
-  DBG_PRINTF_DEBUG("I to the C, receive  callbackery");
+  DBG_PRINTF_DEBUG("receive  callback");
 }
 
 void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *hi2c1)
 {
-  DBG_PRINTF_DEBUG("I to the C, transmit callbackery");
+  DBG_PRINTF_DEBUG("transmit callback");
 }
 
 /* USER CODE END 4 */

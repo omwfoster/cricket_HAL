@@ -898,8 +898,11 @@ bool Adafruit_seesaw::write(uint8_t regHigh, uint8_t regLow,
 
   memcpy(buf, &output_string[2], num);
 
-  HAL_I2C_Master_Transmit_IT(this->hi2c, ((this->i2c_address_local) << 1), &output_string[0], num + 2);
-  DBG_PRINTF_TRACE("HAL_I2C_Master_Transmit");
+  if (HAL_I2C_GetState(this->hi2c) == HAL_I2C_STATE_READY)
+  {
+    parse_HAL_StatusTypeDef(HAL_I2C_Master_Transmit_IT(this->hi2c, ((this->i2c_address_local) << 1), &output_string[0], num + 2));
+  }
+
   return true;
 }
 
@@ -952,15 +955,13 @@ size_t Adafruit_seesaw::write(const char *str)
 
 bool Adafruit_seesaw::sendtestbyte(uint8_t destination)
 {
-
   DBG_PRINTF_TRACE("testbyte address %d", destination);
   uint8_t test_byte = 0;
-  
-  HAL_Delay(100);
-  parse_HAL_I2C_StateTypeDef(HAL_I2C_GetState(this->hi2c));
-  HAL_Delay(100);
-  parse_HAL_StatusTypeDef(HAL_I2C_Master_Transmit_IT(this->hi2c, ((uint16_t)destination << 1), &test_byte, 0x01));
-  
+
+  if (HAL_I2C_GetState(this->hi2c) == HAL_I2C_STATE_READY)
+  {
+    parse_HAL_StatusTypeDef(HAL_I2C_Master_Transmit_IT(this->hi2c, ((this->i2c_address_local) << 1), &test_byte, 1));
+  }
 }
 
 bool Adafruit_seesaw::parse_HAL_StatusTypeDef(HAL_StatusTypeDef h)
@@ -983,7 +984,6 @@ bool Adafruit_seesaw::parse_HAL_StatusTypeDef(HAL_StatusTypeDef h)
     DBG_PRINTF_TRACE("HAL_UNDEFINED");
   }
 }
-
 
 bool Adafruit_seesaw::parse_HAL_I2C_StateTypeDef(HAL_I2C_StateTypeDef h)
 {

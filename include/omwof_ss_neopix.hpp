@@ -111,7 +111,7 @@ typedef struct colour{
   uint8_t g;
   uint8_t b;
   uint8_t padding;
-} __attribute__((packed, aligned(8))) colour_RGB;
+} __attribute__((packed, aligned(4))) colour_RGB;
 
 
 
@@ -130,6 +130,7 @@ public:
   ~seesaw_NeoPixel();
 
   bool begin(uint8_t addr = SEESAW_ADDRESS,uint16_t numLEDs=1 ,int8_t flow = -1);
+  bool begin();
   void show(void), setPin(uint8_t p),
       setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b),
       setPixelColor(uint16_t n, colour_RGB c), setBrightness(uint8_t), clear(),
@@ -140,6 +141,7 @@ public:
   static colour_RGB Color(uint8_t r, uint8_t g, uint8_t b),
       Color(uint8_t r, uint8_t g, uint8_t b, uint8_t w);
   colour_RGB getPixelColor(uint16_t n);
+  colour_RGB Wheel(byte);
   inline bool canShow(void) { return (micros() - endTime) >= 300L; }
 
 protected:
@@ -155,8 +157,8 @@ protected:
           bOffset,      // Index of blue byte
           wOffset;      // Index of white byte (same as rOffset if no white)
   uint32_t endTime; // Latch timing reference
-  colour_RGB  * pixels = NULL;
-  uint8_t  * output_buffer;
+  
+
   colour_RGB * ptr_pixels;
   uint8_t * ptr_output_buffer;
   uint16_t type;

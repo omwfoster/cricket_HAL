@@ -50,8 +50,8 @@ seesaw_NeoPixel::seesaw_NeoPixel(I2C_HandleTypeDef *x)
 
 seesaw_NeoPixel::~seesaw_NeoPixel()
 {
-  if (pixels)
-    free(pixels);
+  if (ptr_pixels)
+    free(ptr_pixels);
 }
 
 bool seesaw_NeoPixel::begin(uint8_t addr, uint16_t numLEDs, int8_t flow)
@@ -60,7 +60,21 @@ bool seesaw_NeoPixel::begin(uint8_t addr, uint16_t numLEDs, int8_t flow)
   {
     return true;
   }
-  if (!Adafruit_seesaw::begin(addr<<1, flow, numLEDs))
+  if (!Adafruit_seesaw::begin(addr << 1, flow, numLEDs))
+    return false;
+  this->begun = false;
+
+  this->begun = true;
+  return true;
+}
+
+bool seesaw_NeoPixel::begin()
+{
+  if (this->begun)
+  {
+    return true;
+  }
+  if (!Adafruit_seesaw::begin(this->i2c_address_local << 1, (uint8_t)(-1)), numLEDs)
     return false;
   this->begun = false;
 
@@ -71,23 +85,18 @@ bool seesaw_NeoPixel::begin(uint8_t addr, uint16_t numLEDs, int8_t flow)
 void seesaw_NeoPixel::updateLength(uint16_t n)
 {
   DBG_PRINTF_TRACE("dealloc pixels");
-  if (!(pixels == NULL))
-    free(pixels); // Free existing data (if any)
+  if (!(ptr_pixels == NULL))
+   // free(ptr_pixels); // Free existing data (if any)
+  if (!(this->ptr_output_buffer == NULL))
+   // free(this->ptr_output_buffer); // Free existing data (if any)
 
   // Allocate new data -- note: ALL PIXELS ARE CLEARED
+  this->numBytes = n * sizeof(colour_RGB);
+  ptr_pixels = (colour_RGB *)malloc(this->numBytes);
 
-  if ((pixels) == (colour_RGB *)malloc(numBytes))
-  {
-    memset(pixels, 0, numBytes);
-    numLEDs = n;
-    DBG_PRINTF_TRACE("malloc pixels");
-  }
-  else
-  {
-    numLEDs = numBytes = 0;
-  }
-
-
+  memset(ptr_pixels, 0, this->numBytes);
+  this->numLEDs = n;
+  DBG_PRINTF_TRACE("malloc pixels");
 
   uint8_t buf[] = {(uint8_t)(numBytes >> 8), (uint8_t)(numBytes & 0xFF)};
   this->write(SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_BUF_LENGTH, buf, 2);
@@ -96,26 +105,19 @@ void seesaw_NeoPixel::updateLength(uint16_t n)
 void seesaw_NeoPixel::updateType(neoPixelType t)
 {
 
- 
   is800KHz = (t < 256); // 400 KHz flag is 1<<8
 
   this->write8(SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_SPEED, is800KHz);
 
-  // If bytes-per-pixel has changed (and pixel data was previously
-  // allocated), re-allocate to new size.  Will clear any data.
-  if (pixels)
-  {
 
-    updateLength(numLEDs);
-  }
 }
 
 void seesaw_NeoPixel::show(void)
 {
 
-  if (!pixels)
-    return;
-  DBG_PRINTF_DEBUG("neopixel::show", 2);
+  if (!ptr_pixels)
+    DBG_PRINTF_DEBUG("neopixel::show no pixels", 2);
+  return;
 
   // Data latch = 300+ microsecond pause in the output stream.  Rather than
   // put a delay at the end of the function, the ending time is noted and
@@ -126,7 +128,7 @@ void seesaw_NeoPixel::show(void)
   // while (!canShow())
   //  ;
   this->output_stream();
-  this->write((uint8_t)SEESAW_NEOPIXEL_BASE, (uint8_t)SEESAW_NEOPIXEL_SHOW, this->output_buffer, numBytes);
+  this->write((uint8_t)SEESAW_NEOPIXEL_BASE, (uint8_t)SEESAW_NEOPIXEL_SHOW, this->ptr_output_buffer, numBytes);
   endTime = micros(); // Save EOD time for latch on next call
   DBG_PRINTF_DEBUG("neopixel::write");
 }
@@ -154,7 +156,7 @@ void seesaw_NeoPixel::setPixelColor(uint16_t n, uint8_t r, uint8_t g,
     }
     colour_RGB *p;
 
-    p = &this->pixels[n];
+    p = &this->ptr_pixels[n];
     p->r = r;
     p->g = g;
     p->b = b;
@@ -174,7 +176,7 @@ void seesaw_NeoPixel::setPixelColor(uint16_t n, colour_RGB c)
     }
     colour_RGB *p;
 
-    p = &this->pixels[n];
+    p = &this->ptr_pixels[n];
     p->r = c.r;
     p->g = c.g;
     p->b = c.b;
@@ -223,15 +225,13 @@ void seesaw_NeoPixel::clear()
 {
 
   DBG_PRINTF_TRACE("clear buffers");
-  uint16_t sz_pix_arr = (numLEDs * sizeof(pixels));
+  uint16_t sz_pix_arr = (numLEDs * sizeof(ptr_pixels));
   uint16_t sz_out_buf = 2 * sz_pix_arr;
   // Clear local pixel buffer
-  memset(this->pixels, 0, sz_pix_arr );
-  memset(ptr_output_buffer,0,sz_out_buf);
 
-  
-    this->write(SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_BUF, ptr_output_buffer, sz_out_buf);
-  
+  memset(ptr_output_buffer, 0, sz_out_buf);
+
+  this->write(SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_BUF, ptr_output_buffer, sz_out_buf);
 }
 
 void seesaw_NeoPixel::setBrightness(uint8_t b) { brightness = b; }
@@ -239,17 +239,32 @@ void seesaw_NeoPixel::setBrightness(uint8_t b) { brightness = b; }
 void seesaw_NeoPixel::output_stream()
 {
 
-  ptr_pixels = pixels;
-  ptr_output_buffer = output_buffer;
+ 
 
   for (int i = 0; i < this->numLEDs; i++)
   {
-    *ptr_output_buffer = (pixels->r);
+    *ptr_output_buffer = (ptr_pixels->r);
     ptr_output_buffer++;
-    *ptr_output_buffer = pixels->g;
+    *ptr_output_buffer = (ptr_pixels->g);
     ptr_output_buffer++;
-    *ptr_output_buffer = pixels->b;
+    *ptr_output_buffer = (ptr_pixels->b);
     ptr_output_buffer++;
     ptr_pixels++;
   }
+}
+
+colour_RGB seesaw_NeoPixel::Wheel(byte WheelPos)
+{
+  WheelPos = 255 - WheelPos;
+  if (WheelPos < 85)
+  {
+    return this->Color(255 - WheelPos * 3, 0, WheelPos * 3);
+  }
+  if (WheelPos < 170)
+  {
+    WheelPos -= 85;
+    return this->Color(0, WheelPos * 3, 255 - WheelPos * 3);
+  }
+  WheelPos -= 170;
+  return this->Color(WheelPos * 3, 255 - WheelPos * 3, 0);
 }

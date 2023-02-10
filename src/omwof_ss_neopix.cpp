@@ -129,7 +129,6 @@ void seesaw_NeoPixel::show(void)
   //  ;
   this->output_stream();
   this->write((uint8_t)SEESAW_NEOPIXEL_BASE, (uint8_t)SEESAW_NEOPIXEL_SHOW, this->ptr_output_buffer, numBytes);
-  endTime = micros(); // Save EOD time for latch on next call
   DBG_PRINTF_DEBUG("neopixel::write");
 }
 

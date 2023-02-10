@@ -93,7 +93,7 @@ void init_I2C1(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   hi2c1.Instance = I2C1;
-  hi2c1.Init.ClockSpeed=100000;
+  hi2c1.Init.ClockSpeed=400000;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
@@ -101,20 +101,7 @@ void init_I2C1(void)
   hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
   hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
   HAL_I2C_Init(&hi2c1);
-
-  GPIO_InitStruct.Pin = GPIO_PIN_6 | GPIO_PIN_7;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-  GPIO_InitStruct.Alternate = GPIO_AF4_I2C1;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
-  {
-    DBG_PRINTF_TRACE("i2c error : %d", hi2c1.Init.OwnAddress1);
-    Error_Handler();
-  }
-  DBG_PRINTF_TRACE("i2c NO error : %d", hi2c1.Init.OwnAddress1);
-  HAL_NVIC_EnableIRQ(I2C1_EV_IRQn);
+  
 }
 uint8_t I2C_bus_scan(I2C_HandleTypeDef *h_i2c)
 {
@@ -306,6 +293,19 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  GPIO_InitStruct.Pin = GPIO_PIN_6 | GPIO_PIN_7;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.Alternate = GPIO_AF4_I2C1;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  __I2C1_CLK_ENABLE();
+
+  HAL_NVIC_SetPriority(I2C1_EV_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(I2C1_EV_IRQn);
+
 }
 
 /* USER CODE BEGIN 4 */

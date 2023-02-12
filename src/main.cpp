@@ -87,12 +87,10 @@ void BlinkLED(uint32_t blink_delay, uint8_t num_blinks);
 void init_I2C1(void)
 {
 
-  /* Peripheral clock enable */
-  __HAL_RCC_I2C1_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
+
 
   hi2c1.Instance = I2C1;
-  hi2c1.Init.ClockSpeed=400000;
+  hi2c1.Init.ClockSpeed=  100000;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
@@ -266,6 +264,8 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
+  __HAL_RCC_I2C1_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);

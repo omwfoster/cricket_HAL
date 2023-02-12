@@ -86,7 +86,6 @@ void BlinkLED(uint32_t blink_delay, uint8_t num_blinks);
 
 void init_I2C1(void)
 {
-  GPIO_InitTypeDef GPIO_InitStruct;
 
   /* Peripheral clock enable */
   __HAL_RCC_I2C1_CLK_ENABLE();
@@ -141,7 +140,7 @@ int main(void)
   DBG_PRINTF_DEBUG("USB init");
   neopix1 = new seesaw_NeoPixel();
 
-  // HAL_I2C_MspInit(&hi2c1);
+  
   init_I2C1();
 
 

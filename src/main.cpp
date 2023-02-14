@@ -87,8 +87,6 @@ void BlinkLED(uint32_t blink_delay, uint8_t num_blinks);
 void init_I2C1(void)
 {
 
-
-
   hi2c1.Instance = I2C1;
   hi2c1.Init.ClockSpeed=  100000;
   hi2c1.Init.OwnAddress1 = 0;
@@ -119,13 +117,7 @@ uint8_t I2C_bus_scan(I2C_HandleTypeDef *h_i2c)
 }
 int main(void)
 {
-  /* USER CODE BEGIN 1 */
 
-  /* USER CODE END 1 */
-
-  /* MCU Configuration--------------------------------------------------------*/
-
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
   SystemClock_Config();
@@ -174,8 +166,9 @@ int main(void)
     DBG_PRINTF_DEBUG("loop");
 
     HAL_Delay(100);
-
-    if ((hi2c1.State != HAL_I2C_STATE_BUSY))
+    //todo:log the next conditional
+    neopix1->parse_HAL_I2C_StateTypeDef(hi2c1.State);
+    if (hi2c1.State == HAL_I2C_STATE_READY )
     {
       wheel_pos < 0xff ? wheel_pos++ : 0;
       neopix1->setPixelColor((neopix1->numPixels()-1), neopix1->Wheel(wheel_pos));
@@ -288,7 +281,7 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Alternate = GPIO_AF4_I2C1;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  __I2C1_CLK_ENABLE();
+
 
   HAL_NVIC_SetPriority(I2C1_EV_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(I2C1_EV_IRQn);

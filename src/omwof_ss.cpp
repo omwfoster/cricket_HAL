@@ -960,7 +960,7 @@ bool Adafruit_seesaw::sendtestbyte(uint8_t destination)
 
   if (HAL_I2C_GetState(this->hi2c) == HAL_I2C_STATE_READY)
   {
-    parse_HAL_StatusTypeDef(HAL_I2C_Master_Transmit_IT(this->hi2c, ((this->i2c_address_local) << 1), &test_byte, 1));
+    parse_HAL_StatusTypeDef(HAL_I2C_Master_Transmit_IT(this->hi2c, (destination << 1), &test_byte, 1));
   }
 }
 

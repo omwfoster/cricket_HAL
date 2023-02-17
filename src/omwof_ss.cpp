@@ -79,9 +79,8 @@ bool Adafruit_seesaw::set_I2C(I2C_HandleTypeDef *hI2c)
  ****************************************************************************************/
 bool Adafruit_seesaw::begin(uint8_t addr, int8_t flow, bool reset)
 {
-  uint8_t ui = this->hi2c->Devaddress;
-  this->hi2c->Devaddress = SEESAW_ADDRESS;
-  if (HAL_I2C_IsDeviceReady(this->hi2c, (ui << 1), 10, 0))
+
+  if (HAL_I2C_IsDeviceReady(this->hi2c, (this->i2c_address_local << 1), 10, 0))
   {
     DBG_PRINTF_TRACE("seesaw::begin");
 
@@ -811,7 +810,7 @@ bool Adafruit_seesaw::write8(byte regHigh, byte regLow, byte value)
   buf[1] = regLow;
   buf[2] = value;
 
-  if (HAL_I2C_Master_Transmit_IT(this->hi2c, ((uint16_t)this->i2c_address_local << 1), &buf[0], 3) == HAL_OK)
+  if (HAL_I2C_Master_Transmit_IT(this->hi2c, ((uint16_t)this->i2c_address_local), &buf[0], 3) == HAL_OK)
   {
     DBG_PRINTF_TRACE("transmit byte good", buf);
     return true;
@@ -953,14 +952,14 @@ size_t Adafruit_seesaw::write(const char *str)
   return len;
 }
 
-bool Adafruit_seesaw::sendtestbyte(uint8_t destination)
+bool Adafruit_seesaw::sendtestbyte()
 {
-  DBG_PRINTF_TRACE("testbyte address %d", destination);
+  DBG_PRINTF_TRACE("testbyte address %d", this->i2c_address_local);
   uint8_t test_byte = 0;
 
   if (HAL_I2C_GetState(this->hi2c) == HAL_I2C_STATE_READY)
   {
-    parse_HAL_StatusTypeDef(HAL_I2C_Master_Transmit_IT(this->hi2c, (destination << 1), &test_byte, 1));
+    parse_HAL_StatusTypeDef(HAL_I2C_Master_Transmit_IT(this->hi2c, (this->i2c_address_local << 1), &test_byte, 1));
   }
 }
 
@@ -1024,4 +1023,22 @@ bool Adafruit_seesaw::parse_HAL_I2C_StateTypeDef(HAL_I2C_StateTypeDef h)
   default:
     return false;
   }
+}
+
+uint8_t Adafruit_seesaw::I2C_bus_scan()
+{
+  HAL_StatusTypeDef ret;
+  uint8_t i;
+  for (i = 1; i < 128; i++)
+  {
+    ret = HAL_I2C_IsDeviceReady(this->hi2c, (uint16_t)(i << 1), 3, 5);
+    if (ret == HAL_OK) /* No ACK Received At That Address */
+    {
+      this->i2c_address_local = i;
+      DBG_PRINTF_TRACE("I2C reponse: %d", this->i2c_address_local);
+      return i;
+    }
+  }
+  DBG_PRINTF_TRACE("I2C NO reponse: " );
+  return 0;
 }

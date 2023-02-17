@@ -67,10 +67,11 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 void init_I2C1(void);
 uint8_t I2C_bus_scan(I2C_HandleTypeDef *);
-
+//
 /* USER CODE BEGIN PFP */
 
 void BlinkLED(uint32_t blink_delay, uint8_t num_blinks);
+bool t_callback, r_callback = false;
 
 /* USER CODE END PFP */
 
@@ -86,35 +87,18 @@ void BlinkLED(uint32_t blink_delay, uint8_t num_blinks);
 
 void init_I2C1(void)
 {
-
   hi2c1.Instance = I2C1;
-  hi2c1.Init.ClockSpeed=  100000;
+  hi2c1.Init.ClockSpeed = 100000;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
   hi2c1.Init.OwnAddress2 = 0;
   hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
   hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  HAL_I2C_Init(&hi2c1);
-  
+       HAL_I2C_Init(&hi2c1);
 }
-uint8_t I2C_bus_scan(I2C_HandleTypeDef *h_i2c)
-{
-  HAL_StatusTypeDef ret;
-  uint8_t i;
-  for (i = 1; i < 128; i++)
-  {
-    ret = HAL_I2C_IsDeviceReady(h_i2c, (uint16_t)(i << 1), 3, 5);
-    if (ret == HAL_OK) /* No ACK Received At That Address */
-    {
-      h_i2c->Devaddress = (uint16_t)(i);
-      DBG_PRINTF_TRACE("I2C reponse: %d", i);
-      return i;
-    }
-  }
-  DBG_PRINTF_TRACE("I2C NO reponse: %d", i);
-  return 0;
-}
+
+
 int main(void)
 {
 
@@ -130,76 +114,58 @@ int main(void)
   DBG_PRINTF_DEBUG("USB init");
   neopix1 = new seesaw_NeoPixel();
 
-  
   init_I2C1();
-
-
-  uint8_t i2cscanres = I2C_bus_scan(&hi2c1);
+  neopix1->SWReset();
+  HAL_Delay(500);
   neopix1->set_I2C(&hi2c1);
-  neopix1->i2c_address_local = i2cscanres;
+  HAL_Delay(200);
+  
 
-  neopix1->sendtestbyte(i2cscanres);
+  neopix1->begin( -1, true);
 
-  DBG_PRINTF_TRACE("update address %d", i2cscanres);
+  HAL_Delay(200);
+  neopix1->sendtestbyte();
+  
+
+  
   neopix1->updateType(NEO_GRB + NEO_KHZ800);
-
   neopix1->updateLength(1);
-  //neopix1->clear();
   neopix1->setPin((uint8_t)27 << 1);
 
   BlinkLED(100, 3);
-  // crick1->begin(CRICK_I2C_ADDR,-1,true);
-  neopix1->begin(i2cscanres, -1, true);
+  
 
-  /* USER CODE BEGIN 2 */
-
-  /* USER CODE END 2 */
-
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
   while (1)
   {
-
-    // If error writing to card, blink 3 times
-
     BlinkLED(200, 3);
     DBG_PRINTF_DEBUG("loop");
-
-    HAL_Delay(100);
-    //todo:log the next conditional
-    neopix1->parse_HAL_I2C_StateTypeDef(hi2c1.State);
-    if (hi2c1.State == HAL_I2C_STATE_READY )
+    if (t_callback | r_callback)
     {
-      wheel_pos < 0xff ? wheel_pos++ : 0;
-      neopix1->setPixelColor((neopix1->numPixels()-1), neopix1->Wheel(wheel_pos));
-      neopix1->show();
-      neopix1->digitalWrite(CRICKIT_SIGNAL3,HIGH);
-
-      DBG_PRINTF_DEBUG("pixel output");
+      t_callback = false;
+      r_callback = false;
+      DBG_PRINTF_DEBUG("callback reset");
     }
     else
     {
-      DBG_PRINTF_DEBUG("i2c not ready");
-      if (HAL_I2C_GetError(&hi2c1))
-      {
-        DBG_PRINTF_DEBUG("nack i2c");
-      }
+      DBG_PRINTF_DEBUG("no callback");
     }
 
-    // Wait before sampling again
     HAL_Delay(100);
+    // todo:log the next conditional
+    neopix1->parse_HAL_I2C_StateTypeDef(hi2c1.State);
+    if (hi2c1.State == HAL_I2C_STATE_READY)
+    {
+      wheel_pos < 0xff ? wheel_pos++ : 0;
+      neopix1->setPixelColor((neopix1->numPixels() - 1), neopix1->Wheel(wheel_pos));
+      neopix1->show();
+      
 
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
+      DBG_PRINTF_DEBUG("pixel output");
+    }
+ 
+    HAL_Delay(100);
   }
-  /* USER CODE END 3 */
 }
-
-/**
- * @brief System Clock Configuration
- * @retval None
- */
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
@@ -253,7 +219,7 @@ static void MX_GPIO_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
-  
+
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_I2C1_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
@@ -281,11 +247,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Alternate = GPIO_AF4_I2C1;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-
-
   HAL_NVIC_SetPriority(I2C1_EV_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(I2C1_EV_IRQn);
-
+  HAL_NVIC_SetPriority(I2C1_ER_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(I2C1_ER_IRQn);
 }
 
 /* USER CODE BEGIN 4 */
@@ -299,6 +264,7 @@ void BlinkLED(uint32_t blink_delay, uint8_t num_blinks)
     HAL_Delay(blink_delay);
     HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
     HAL_Delay(blink_delay);
+    
   }
 }
 
@@ -310,12 +276,17 @@ int debug_print_callback(char *debugMessage, unsigned int length)
 
 void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c1)
 {
-  DBG_PRINTF_DEBUG("receive  callback");
+  r_callback = true;
 }
 
 void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *hi2c1)
 {
-  DBG_PRINTF_DEBUG("transmit callback");
+  t_callback = true;
+}
+
+void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *hi2c1)
+{
+    
 }
 
 /* USER CODE END 4 */

@@ -54,13 +54,13 @@ seesaw_NeoPixel::~seesaw_NeoPixel()
     free(ptr_pixels);
 }
 
-bool seesaw_NeoPixel::begin(uint8_t addr, uint16_t numLEDs, int8_t flow)
+bool seesaw_NeoPixel::begin(uint16_t numLEDs, int8_t flow)
 {
   if (this->begun)
   {
     return true;
   }
-  if (!Adafruit_seesaw::begin(addr << 1, flow, numLEDs))
+  if (!Adafruit_seesaw::begin(this->i2c_address_local << 1, flow, numLEDs))
     return false;
   this->begun = false;
 
@@ -137,7 +137,7 @@ void seesaw_NeoPixel::setPin(uint8_t p)
 {
   DBG_PRINTF_DEBUG("neopixel::setpin pre");
   this->write8(SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_PIN, p);
-  DBG_PRINTF_DEBUG("neopixel::setpin post");
+  
 }
 
 // Set pixel color from separate R,G,B components:

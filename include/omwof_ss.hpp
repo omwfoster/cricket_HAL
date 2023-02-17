@@ -308,7 +308,7 @@ public:
   bool enableEncoderInterrupt(uint8_t encoder = 0);
   bool disableEncoderInterrupt(uint8_t encoder = 0);
   void setEncoderPosition(int32_t pos, uint8_t encoder = 0);
-  bool sendtestbyte(uint8_t);
+  bool sendtestbyte();
 
   virtual size_t write(uint8_t);
   virtual size_t write(const char *str);
@@ -328,6 +328,7 @@ protected:
   bool read(uint8_t regHigh, uint8_t regLow, uint8_t *buf, uint16_t num,
             uint16_t delay = 250);
   bool write(uint8_t regHigh, uint8_t regLow, uint8_t *buf, uint16_t num);
+  uint8_t I2C_bus_scan();
 
   /*=========================================================================
           REGISTER BITFIELDS

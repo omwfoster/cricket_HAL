@@ -1025,6 +1025,12 @@ bool Adafruit_seesaw::parse_HAL_I2C_StateTypeDef(HAL_I2C_StateTypeDef h)
   }
 }
 
+HAL_I2C_StateTypeDef Adafruit_seesaw::get_i2cstate()
+{
+this->parse_HAL_I2C_StateTypeDef(this->hi2c->State);
+return this->hi2c->State;
+}
+
 uint8_t Adafruit_seesaw::I2C_bus_scan()
 {
   HAL_StatusTypeDef ret;
@@ -1042,3 +1048,5 @@ uint8_t Adafruit_seesaw::I2C_bus_scan()
   DBG_PRINTF_TRACE("I2C NO reponse: " );
   return 0;
 }
+
+//TODO :: get_state member functions to call parse

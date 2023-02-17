@@ -151,9 +151,11 @@ int main(void)
     }
 
     HAL_Delay(100);
-    // todo:log the next conditional
-    neopix1->parse_HAL_I2C_StateTypeDef(hi2c1.State);
-    if (hi2c1.State == HAL_I2C_STATE_READY)
+    // todo:log the next conditional 
+    //parse_HAL_I2C_StateTypeDef should be a protected meber
+    // we should simply call neopix->get_state_i2c(to be implemented)
+    
+    if (neopix1->get_i2cstate() == HAL_I2C_STATE_READY)
     {
       wheel_pos < 0xff ? wheel_pos++ : 0;
       neopix1->setPixelColor((neopix1->numPixels() - 1), neopix1->Wheel(wheel_pos));

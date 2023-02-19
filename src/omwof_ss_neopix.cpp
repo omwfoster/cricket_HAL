@@ -60,6 +60,7 @@ bool seesaw_NeoPixel::begin(uint16_t numLEDs, int8_t flow)
   {
     return true;
   }
+  this->i2c_address_local = this->I2C_bus_scan() ;//TODO:: this is rong
   if (!Adafruit_seesaw::begin(this->i2c_address_local << 1, flow, numLEDs))
     return false;
   this->begun = false;

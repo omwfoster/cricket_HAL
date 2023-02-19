@@ -88,7 +88,6 @@ bool Adafruit_seesaw::begin(uint8_t addr, int8_t flow, bool reset)
   }
   else
   {
-
     DBG_PRINTF_TRACE("i2c not ready(begin)");
     return false;
   }
@@ -954,12 +953,13 @@ size_t Adafruit_seesaw::write(const char *str)
 
 bool Adafruit_seesaw::sendtestbyte()
 {
-  DBG_PRINTF_TRACE("testbyte address %d", this->i2c_address_local);
+  uint8_t i = this->i2c_address_local<<1;
+  DBG_PRINTF_TRACE("testbyte address %d", i);
   uint8_t test_byte = 0;
 
   if (HAL_I2C_GetState(this->hi2c) == HAL_I2C_STATE_READY)
   {
-    parse_HAL_StatusTypeDef(HAL_I2C_Master_Transmit_IT(this->hi2c, (this->i2c_address_local << 1), &test_byte, 1));
+    parse_HAL_StatusTypeDef(HAL_I2C_Master_Transmit_IT(this->hi2c, i, &test_byte, 1));
   }
 }
 

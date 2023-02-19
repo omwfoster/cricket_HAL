@@ -71,7 +71,7 @@ uint8_t I2C_bus_scan(I2C_HandleTypeDef *);
 /* USER CODE BEGIN PFP */
 
 void BlinkLED(uint32_t blink_delay, uint8_t num_blinks);
-bool t_callback, r_callback = false;
+bool t_callback, r_callback, e_callback = false;
 
 /* USER CODE END PFP */
 
@@ -95,9 +95,8 @@ void init_I2C1(void)
   hi2c1.Init.OwnAddress2 = 0;
   hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
   hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-       HAL_I2C_Init(&hi2c1);
+  HAL_I2C_Init(&hi2c1);
 }
-
 
 int main(void)
 {
@@ -112,28 +111,22 @@ int main(void)
   MX_USB_DEVICE_Init();
   HAL_Delay(3000);
   DBG_PRINTF_DEBUG("USB init");
-  neopix1 = new seesaw_NeoPixel();
-
   init_I2C1();
-  neopix1->SWReset();
-  HAL_Delay(500);
-  neopix1->set_I2C(&hi2c1);
-  HAL_Delay(200);
-  
 
-  neopix1->begin( -1, true);
+  //TODO : constructor calls bus scan before i2c handle is set
+   neopix1 = new seesaw_NeoPixel(&hi2c1);
+
+
+  neopix1->begin(-1, true);
 
   HAL_Delay(200);
   neopix1->sendtestbyte();
-  
 
-  
   neopix1->updateType(NEO_GRB + NEO_KHZ800);
   neopix1->updateLength(1);
   neopix1->setPin((uint8_t)27 << 1);
 
   BlinkLED(100, 3);
-  
 
   while (1)
   {
@@ -145,26 +138,32 @@ int main(void)
       r_callback = false;
       DBG_PRINTF_DEBUG("callback reset");
     }
-    else
+    else if (e_callback)
     {
-      DBG_PRINTF_DEBUG("no callback");
+      e_callback = false;
+      DBG_PRINTF_DEBUG("error callback");
     }
 
     HAL_Delay(100);
-    // todo:log the next conditional 
-    //parse_HAL_I2C_StateTypeDef should be a protected meber
+    // todo:log the next conditional
+    // parse_HAL_I2C_StateTypeDef should be a protected meber
     // we should simply call neopix->get_state_i2c(to be implemented)
-    
+    DBG_PRINTF_DEBUG("transfer count %d", neopix1->hi2c->XferCount);
+    DBG_PRINTF_DEBUG("transfer size %d", neopix1->hi2c->XferSize);
+
     if (neopix1->get_i2cstate() == HAL_I2C_STATE_READY)
     {
       wheel_pos < 0xff ? wheel_pos++ : 0;
       neopix1->setPixelColor((neopix1->numPixels() - 1), neopix1->Wheel(wheel_pos));
       neopix1->show();
-      
 
       DBG_PRINTF_DEBUG("pixel output");
     }
- 
+    else{
+      DBG_PRINTF_DEBUG("no pixel output");
+      neopix1->parse_HAL_I2C_StateTypeDef(neopix1->get_i2cstate());
+    }
+
     HAL_Delay(100);
   }
 }
@@ -266,7 +265,6 @@ void BlinkLED(uint32_t blink_delay, uint8_t num_blinks)
     HAL_Delay(blink_delay);
     HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
     HAL_Delay(blink_delay);
-    
   }
 }
 
@@ -275,34 +273,32 @@ int debug_print_callback(char *debugMessage, unsigned int length)
   CDC_Transmit_FS((uint8_t *)debugMessage, length);
   return true;
 }
-
-void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c1)
+extern "C"
 {
-  r_callback = true;
-}
 
-void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *hi2c1)
-{
-  t_callback = true;
-}
+  void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c1)
+  {
+    r_callback = true;
+  }
 
-void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *hi2c1)
-{
-    
-}
+  void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *hi2c1)
+  {
+    t_callback = true;
+  }
 
-/* USER CODE END 4 */
+  void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *hi2c1)
+  {
+    e_callback = true;
+  }
+  /* USER CODE END 4 */
 
-/**
- * @brief  This function is executed in case of error occurrence.
- * @retval None
- */
-void Error_Handler(void)
-{
-  /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
-
-  /* USER CODE END Error_Handler_Debug */
+  /**
+   * @brief  This function is executed in case of error occurrence.
+   * @retval None
+   */
+  void Error_Handler(void)
+  {
+  }
 }
 
 #ifdef USE_FULL_ASSERT

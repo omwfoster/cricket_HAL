@@ -315,6 +315,8 @@ public:
   uint8_t i2c_address_local;
   I2C_HandleTypeDef *hi2c;
   HAL_I2C_StateTypeDef get_i2cstate();
+  bool parse_HAL_StatusTypeDef(HAL_StatusTypeDef);
+  bool parse_HAL_I2C_StateTypeDef(HAL_I2C_StateTypeDef);
 
 protected:
   int8_t _flow; /*!< The flow control pin to use */
@@ -328,8 +330,7 @@ protected:
             uint16_t delay = 250);
   bool write(uint8_t regHigh, uint8_t regLow, uint8_t *buf, uint16_t num);
   uint8_t I2C_bus_scan();
-  bool parse_HAL_StatusTypeDef(HAL_StatusTypeDef);
-  bool parse_HAL_I2C_StateTypeDef(HAL_I2C_StateTypeDef);
+
 
   /*=========================================================================
           REGISTER BITFIELDS

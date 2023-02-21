@@ -27,6 +27,12 @@
  */
 
 #include "omwof_ss.hpp"
+extern "C" {
+    #include "I2Cdev.h"
+}
+
+
+
 
 Print::Print()
 {
@@ -45,6 +51,11 @@ Adafruit_seesaw::Adafruit_seesaw()
   DBG_PRINTF_TRACE("seesaw constructor");
 }
 
+Adafruit_seesaw::Adafruit_seesaw(I2C_HandleTypeDef *hI2c)
+{
+  DBG_PRINTF_TRACE("seesaw constructor");
+}
+
 bool Adafruit_seesaw::set_I2C(I2C_HandleTypeDef *hI2c)
 
 { // todo: open i2c channel with cla
@@ -53,8 +64,7 @@ bool Adafruit_seesaw::set_I2C(I2C_HandleTypeDef *hI2c)
   if ((this->hi2c->State) == HAL_I2C_STATE_READY)
   {
 
-    if (HAL_I2C_EnableListen_IT(hI2c) == HAL_OK)
-      DBG_PRINTF_TRACE("i2c connection ready");
+ 
     return true;
   }
   else
@@ -809,14 +819,10 @@ bool Adafruit_seesaw::write8(byte regHigh, byte regLow, byte value)
   buf[1] = regLow;
   buf[2] = value;
 
-  if (HAL_I2C_Master_Transmit_IT(this->hi2c, ((uint16_t)this->i2c_address_local), &buf[0], 3) == HAL_OK)
-  {
-    DBG_PRINTF_TRACE("transmit byte good", buf);
-    return true;
-  }
+  
+  I2Cdev_writeByte(this->i2c_address_local,regHigh,value);
 
-  DBG_PRINTF_TRACE("transmit byte bad");
-  return false;
+  
 }
 
 /**
@@ -858,11 +864,9 @@ bool Adafruit_seesaw::read(uint8_t regHigh, uint8_t regLow, uint8_t *buf,
                            uint16_t num, uint16_t delay)
 {
 
-  uint8_t prefix[2];
-  prefix[0] = (uint8_t)regHigh;
-  prefix[1] = (uint8_t)regLow;
+  I2Cdev_readBytes(this->i2c_address_local,regHigh,num,buf);
 
-  HAL_I2C_Master_Receive_IT(this->hi2c, SEESAW_ADDRESS, buf, num);
+  
 
 #ifdef SEESAW_I2C_DEBUG
   DBG_PRINTF_DEBUG("Reading ");
@@ -890,16 +894,11 @@ const uint8_t *aTxBuffer = &output_string[0];
 bool Adafruit_seesaw::write(uint8_t regHigh, uint8_t regLow,
                             uint8_t *buf = NULL, uint16_t num = 0)
 {
-  output_string[0] = regHigh;
-  output_string[1] = regLow;
-  // TODO : catch buffer overflow if(num< .........
 
-  memcpy(buf, &output_string[2], num);
 
-  if (HAL_I2C_GetState(this->hi2c) == HAL_I2C_STATE_READY)
-  {
-    parse_HAL_StatusTypeDef(HAL_I2C_Master_Transmit_IT(this->hi2c, ((this->i2c_address_local) << 1), &output_string[0], num + 2));
-  }
+I2Cdev_writeBytes(this->i2c_address_local,regHigh,num,buf);
+
+
 
   return true;
 }
@@ -955,12 +954,11 @@ bool Adafruit_seesaw::sendtestbyte()
 {
   uint8_t i = this->i2c_address_local<<1;
   DBG_PRINTF_TRACE("testbyte address %d", i);
-  uint8_t test_byte = 0;
+  
 
-  if (HAL_I2C_GetState(this->hi2c) == HAL_I2C_STATE_READY)
-  {
-    parse_HAL_StatusTypeDef(HAL_I2C_Master_Transmit_IT(this->hi2c, i, &test_byte, 1));
-  }
+  I2Cdev_writeByte(this->i2c_address_local,i,0x0);
+
+  return false;
 }
 
 bool Adafruit_seesaw::parse_HAL_StatusTypeDef(HAL_StatusTypeDef h)

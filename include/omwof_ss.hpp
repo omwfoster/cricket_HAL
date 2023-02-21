@@ -6,6 +6,8 @@
 #include <stm32f4xx_hal.h>
 #include "debug_print.h"
 
+
+
 #define byte uint8_t
 #define COUNTOF(__BUFFER__) (sizeof(__BUFFER__) / sizeof(*(__BUFFER__)))
 #define SEESAW_I2C_DEBUG
@@ -249,6 +251,7 @@ class Adafruit_seesaw : public Print
 public:
   // constructors
   Adafruit_seesaw();
+  Adafruit_seesaw(I2C_HandleTypeDef *hI2c);
   ~Adafruit_seesaw(void){};
 
   bool begin(uint8_t addr = SEESAW_ADDRESS, int8_t flow = -1,
@@ -348,6 +351,15 @@ protected:
   };
   sercom_inten _sercom_inten; ///< sercom interrupt enable register instance
 
+  union seesaw_register
+  {
+    uint16_t register_16;
+    struct 
+    {
+      uint8_t high;
+      uint8_t low;
+    }reg_byte;
+  };
   /*=========================================================================*/
 };
 

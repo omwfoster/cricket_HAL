@@ -113,19 +113,13 @@ int main(void)
   HAL_Delay(3000);
   DBG_PRINTF_DEBUG("USB init");
   init_I2C1();
-
-  //TODO : constructor calls bus scan before i2c handle is set
-   neopix1 = new seesaw_NeoPixel(&hi2c1);
+   neopix1 = new seesaw_NeoPixel(&hi2c1,1,((uint8_t)27 << 1));
 
 
   neopix1->begin(-1, true);
 
   HAL_Delay(200);
   neopix1->sendtestbyte();
-
-  neopix1->updateType(NEO_GRB + NEO_KHZ800);
-  neopix1->updateLength(1);
-  neopix1->setPin((uint8_t)27 << 1);
 
   BlinkLED(100, 3);
 

@@ -47,6 +47,13 @@ seesaw_NeoPixel::seesaw_NeoPixel(I2C_HandleTypeDef *x)
       begun(false), numLEDs(0), numBytes(0), pin(-1), brightness(0)
 {
 }
+seesaw_NeoPixel::seesaw_NeoPixel(I2C_HandleTypeDef *x,uint16_t numled,uint8_t pin)
+    : Adafruit_seesaw(x),is800KHz(true),
+      begun(false), numBytes(0), pin(-1), brightness(0)
+{
+  this->i2c_address_local = this->I2C_bus_scan() ;
+  this->pin = pin;
+}
 
 seesaw_NeoPixel::~seesaw_NeoPixel()
 {
@@ -60,11 +67,9 @@ bool seesaw_NeoPixel::begin(uint16_t numLEDs, int8_t flow)
   {
     return true;
   }
-  this->i2c_address_local = this->I2C_bus_scan() ;//TODO:: this is rong
+  
   if (!Adafruit_seesaw::begin(this->i2c_address_local << 1, flow, numLEDs))
     return false;
-  this->begun = false;
-
   this->begun = true;
   return true;
 }

@@ -64,7 +64,6 @@ bool Adafruit_seesaw::set_I2C(I2C_HandleTypeDef *hI2c)
   if ((this->hi2c->State) == HAL_I2C_STATE_READY)
   {
 
- 
     return true;
   }
   else
@@ -919,7 +918,7 @@ size_t Adafruit_seesaw::write(uint8_t character)
   DBG_PRINTF_TRACE("write char - ", character);
   // TODO: add support for multiple sercoms
   this->write8(SEESAW_SERCOM0_BASE, SEESAW_SERCOM_DATA, character);
-  // delay(1); // TODO: this can be optimized... it's only needed for longer writes
+  
   return 1;
 }
 
@@ -1036,8 +1035,10 @@ uint8_t Adafruit_seesaw::I2C_bus_scan()
   for (i = 1; i < 128; i++)
   {
     ret = HAL_I2C_IsDeviceReady(this->hi2c, (uint16_t)(i << 1), 3, 5);
+    
     if (ret == HAL_OK) /* No ACK Received At That Address */
     {
+      this->parse_HAL_StatusTypeDef(ret);
       this->i2c_address_local = i;
       DBG_PRINTF_TRACE("I2C reponse: %d", this->i2c_address_local);
       return i;

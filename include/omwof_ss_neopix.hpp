@@ -127,6 +127,7 @@ public:
   seesaw_NeoPixel(uint16_t n, uint8_t p = 6,
                   neoPixelType t = NEO_GRB + NEO_KHZ800, I2C_HandleTypeDef * x = NULL);
   seesaw_NeoPixel(I2C_HandleTypeDef * x = NULL);
+  seesaw_NeoPixel(I2C_HandleTypeDef *x,uint16_t numled,uint8_t pin);
   ~seesaw_NeoPixel();
 
   bool begin(uint16_t numLEDs=1 ,int8_t flow = -1);

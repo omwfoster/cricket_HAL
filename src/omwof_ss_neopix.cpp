@@ -51,7 +51,8 @@ seesaw_NeoPixel::seesaw_NeoPixel(I2C_HandleTypeDef *x,uint16_t numled,uint8_t pi
     : Adafruit_seesaw(x),is800KHz(true),
       begun(false), numBytes(0), pin(-1), brightness(0)
 {
-  this->i2c_address_local = this->I2C_bus_scan() ;
+  
+  
   this->pin = pin;
 }
 

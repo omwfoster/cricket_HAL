@@ -949,11 +949,16 @@ size_t Adafruit_seesaw::write(const char *str)
 
 bool Adafruit_seesaw::sendtestbyte()
 {
-  uint8_t i = this->i2c_address_local << 1;
-  DBG_PRINTF_TRACE("testbyte address %d", i);
-
-  I2Cdev_writeByte(this->i2c_address_local, i, 0x0);
-
+  //uint8_t i = this->i2c_address_local;
+  DBG_PRINTF_TRACE("testbyte address");
+  for (uint8_t i = 1; i < 255; i++)
+  {
+    if (I2Cdev_writeByte((this->i2c_address_local), 0x00, 0x0) == 0)
+    {
+      DBG_PRINTF_TRACE("testbyte address %d", i);
+      return true;
+    }
+  }
   return false;
 }
 

@@ -119,8 +119,7 @@ int main(void)
   neopix1->begin(-1, true);
 
   HAL_Delay(200);
-  neopix1->sendtestbyte();
-
+  if(neopix1->sendtestbyte()){DBG_PRINTF_DEBUG("testbyte success");}
   BlinkLED(100, 3);
 
   while (1)

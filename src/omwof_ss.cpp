@@ -824,7 +824,7 @@ bool Adafruit_seesaw::write8(byte regHigh, byte regLow, byte value)
   buf[1] = regLow;
   buf[2] = value;
 
-  I2Cdev_writeByte(this->i2c_address_local, regHigh, value);
+  I2Cdev_writeByte(this->i2c_address_local, regHigh, regLow,value);
 }
 
 /**
@@ -862,11 +862,11 @@ uint8_t Adafruit_seesaw::read8(byte regHigh, byte regLow, uint16_t delay)
  *(ex. reading ADC data)
  *  @returns    True on I2C read success
  ****************************************************************************************/
-bool Adafruit_seesaw::read(uint8_t regHigh, uint8_t regLow, uint8_t *buf,
+bool Adafruit_seesaw::read(uint8_t regHigh, uint8_t regLow, uint8_t * buf,
                            uint16_t num, uint16_t delay)
 {
 
-  I2Cdev_readBytes(this->i2c_address_local, regHigh, num, buf);
+  I2Cdev_readBytes(this->i2c_address_local, regHigh, regLow ,num, buf);
 
 #ifdef SEESAW_I2C_DEBUG
   DBG_PRINTF_DEBUG("Reading ");
@@ -895,7 +895,7 @@ bool Adafruit_seesaw::write(uint8_t regHigh, uint8_t regLow,
                             uint8_t *buf = NULL, uint16_t num = 0)
 {
 
-  I2Cdev_writeBytes(this->i2c_address_local, regHigh, num, buf);
+  I2Cdev_writeBytes(this->i2c_address_local, regHigh,regLow, num, buf);
 
   return true;
 }
@@ -953,11 +953,12 @@ bool Adafruit_seesaw::sendtestbyte()
   DBG_PRINTF_TRACE("testbyte address");
   for (uint8_t i = 1; i < 255; i++)
   {
-    if (I2Cdev_writeByte((this->i2c_address_local), 0x00, 0x0) == 0)
+    if (I2Cdev_writeByte((this->i2c_address_local), 0x0, 0x0,0x0) == 0)
     {
       DBG_PRINTF_TRACE("testbyte address %d", i);
       return true;
     }
+    HAL_Delay(20);
   }
   return false;
 }

@@ -314,18 +314,18 @@ int8_t 	I2Cdev_writeWords(uint8_t dev_addr, uint8_t reg_high,uint8_t reg_low, ui
  * @param data 		New bit value to write
  * @return Status of operation (0 = success, <0 = error)
  */
-int8_t 	I2Cdev_writeBit(uint8_t dev_addr, uint8_t reg_addr, uint8_t bit_n, uint8_t data) {
+int8_t 	I2Cdev_writeBit(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8_t bit_n, uint8_t data) {
 	uint8_t b;
 	int8_t err;
 
-	err = I2Cdev_readByte(dev_addr, reg_addr, &b);
+	err = I2Cdev_readByte(dev_addr, reg_high, reg_low, &b);
 	if(err < 0) {
 		return err;
 	}
 
 	b = (data != 0) ? (b | (1<<bit_n)) : (b &= ~(1<<bit_n));
 
-	return I2Cdev_writeByte(dev_addr, reg_addr, b);
+	return I2Cdev_writeByte(dev_addr, reg_high, reg_low, b);
 }
 
 
@@ -338,11 +338,11 @@ int8_t 	I2Cdev_writeBit(uint8_t dev_addr, uint8_t reg_addr, uint8_t bit_n, uint8
  */
 int8_t 	I2Cdev_writeBitW(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8_t bit_n, uint16_t data) {
 	uint16_t w;
-	I2Cdev_readWord(dev_addr, reg_addr, &w);
+	I2Cdev_readWord(dev_addr, reg_high , reg_low, &w);
 
 	w = (data != 0) ? (w | (1<<bit_n)) : (w &= ~(1<<bit_n));
 
-	return I2Cdev_writeWord(dev_addr, uint8_t reg_high, uint8_t reg_low, w);
+	return I2Cdev_writeWord(dev_addr,  reg_high,  reg_low, w);
 }
 
 
@@ -360,14 +360,14 @@ int8_t I2Cdev_writeBits(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uin
     uint8_t b;
     int8_t err;
 
-    if ((err = I2Cdev_readByte(dev_addr, uint8_t reg_high, uint8_t reg_low, &b)) == 0) {
+    if ((err = I2Cdev_readByte(dev_addr, reg_high, reg_low, &b)) == 0) {
         uint8_t mask = ((1 << len) - 1) << (start_bit - len + 1);
         data <<= (start_bit - len + 1); // shift data into correct position
         data &= mask; // zero all non-important bits in data
         b &= ~(mask); // zero all important bits in existing byte
         b |= data; // combine data with existing byte
 
-        return I2Cdev_writeByte(dev_addr, uint8_t reg_high, uint8_t reg_low, b);
+        return I2Cdev_writeByte(dev_addr,reg_high,reg_low, b);
     }
     else {
         return err;
@@ -389,13 +389,13 @@ int8_t I2Cdev_writeBitsW(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, ui
     uint16_t w;
     int8_t err;
 
-    if ((err = I2Cdev_readWord(dev_addr, uint8_t reg_high, uint8_t reg_low, &w)) != 0) {
+    if ((err = I2Cdev_readWord(dev_addr, reg_high, reg_low, &w)) != 0) {
         uint16_t mask = ((1 << len) - 1) << (start_bit - len + 1);
         data <<= (start_bit - len + 1); // shift data into correct position
         data &= mask; // zero all non-important bits in data
         w &= ~(mask); // zero all important bits in existing word
         w |= data; // combine data with existing word
-        return I2Cdev_writeWord(dev_addr, uint8_t reg_high, uint8_t reg_low, w);
+        return I2Cdev_writeWord(dev_addr, reg_high, reg_low, w);
     }
     else {
         return err;

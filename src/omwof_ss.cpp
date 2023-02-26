@@ -866,12 +866,12 @@ bool Adafruit_seesaw::read(uint8_t regHigh, uint8_t regLow, uint8_t * buf,
                            uint16_t num, uint16_t delay)
 {
 
-  I2Cdev_readBytes(this->i2c_address_local, regHigh, regLow ,num, buf);
+  
 
 #ifdef SEESAW_I2C_DEBUG
-  DBG_PRINTF_DEBUG("Reading ");
 
-  DBG_PRINTF_DEBUG(" bytes");
+I2Cdev_readBytes(this->i2c_address_local, regHigh, regLow ,num, buf);
+  DBG_PRINTF_DEBUG("reading %d bytes - %d delay", num,delay);
 #endif
 
   return true;
@@ -950,16 +950,17 @@ size_t Adafruit_seesaw::write(const char *str)
 bool Adafruit_seesaw::sendtestbyte()
 {
 
-  for (uint8_t i = 1; i < 255; i++)
-  {DBG_PRINTF_TRACE("version %d",this->getVersion());
-   // if (I2Cdev_writeByte((this->i2c_address_local), 0x0, 0x0,0x0) == 0)
-   if (I2Cdev_writeByte(i<<1, 0x0, 0x0,0x0) == 0)
+  
+  DBG_PRINTF_TRACE("version %d",this->getVersion());
+ 
+   for (uint8_t i = 1; i < 255; i++)
+   if (I2Cdev_writeByte(i, 0x0, 0x0,0x0) == 0)
     {
       DBG_PRINTF_TRACE("testbyte address %d", i);
       return true;
     }
-    HAL_Delay(5);
-  }
+
+  
   return false;
 }
 

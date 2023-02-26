@@ -47,12 +47,11 @@ seesaw_NeoPixel::seesaw_NeoPixel(I2C_HandleTypeDef *x)
       begun(false), numLEDs(0), numBytes(0), pin(-1), brightness(0)
 {
 }
-seesaw_NeoPixel::seesaw_NeoPixel(I2C_HandleTypeDef *x,uint16_t numled,uint8_t pin)
-    : Adafruit_seesaw(x),is800KHz(true),
+seesaw_NeoPixel::seesaw_NeoPixel(I2C_HandleTypeDef *x, uint16_t numled, uint8_t pin)
+    : Adafruit_seesaw(x), is800KHz(true),
       begun(false), numBytes(0), pin(-1), brightness(0)
 {
-  
-  
+
   this->pin = pin;
 }
 
@@ -68,7 +67,7 @@ bool seesaw_NeoPixel::begin(uint16_t numLEDs, int8_t flow)
   {
     return true;
   }
-  
+
   if (!Adafruit_seesaw::begin(this->i2c_address_local << 1, flow, numLEDs))
     return false;
   this->begun = true;
@@ -82,8 +81,10 @@ bool seesaw_NeoPixel::begin()
     return true;
   }
   if (!Adafruit_seesaw::begin(this->i2c_address_local << 1, (uint8_t)(-1)), numLEDs)
+  {
+    this->begun = false;
     return false;
-  this->begun = false;
+  }
 
   this->begun = true;
   return true;
@@ -93,12 +94,12 @@ void seesaw_NeoPixel::updateLength(uint16_t n)
 {
   DBG_PRINTF_TRACE("dealloc pixels");
   if (!(ptr_pixels == NULL))
-   // free(ptr_pixels); // Free existing data (if any)
-  if (!(this->ptr_output_buffer == NULL))
-   // free(this->ptr_output_buffer); // Free existing data (if any)
+    // free(ptr_pixels); // Free existing data (if any)
+    if (!(this->ptr_output_buffer == NULL))
+      // free(this->ptr_output_buffer); // Free existing data (if any)
 
-  // Allocate new data -- note: ALL PIXELS ARE CLEARED
-  this->numBytes = n * sizeof(colour_RGB);
+      // Allocate new data -- note: ALL PIXELS ARE CLEARED
+      this->numBytes = n * sizeof(colour_RGB);
   ptr_pixels = (colour_RGB *)malloc(this->numBytes);
 
   memset(ptr_pixels, 0, this->numBytes);
@@ -115,8 +116,6 @@ void seesaw_NeoPixel::updateType(neoPixelType t)
   is800KHz = (t < 256); // 400 KHz flag is 1<<8
 
   this->write8(SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_SPEED, is800KHz);
-
-
 }
 
 void seesaw_NeoPixel::show(void)
@@ -134,6 +133,8 @@ void seesaw_NeoPixel::show(void)
   // rather than stalling for the latch.
   // while (!canShow())
   //  ;
+
+  //TODO:POSSIBLE CULPRIT FOR HANGING
   this->output_stream();
   this->write((uint8_t)SEESAW_NEOPIXEL_BASE, (uint8_t)SEESAW_NEOPIXEL_SHOW, this->ptr_output_buffer, numBytes);
   DBG_PRINTF_DEBUG("neopixel::write");
@@ -144,7 +145,6 @@ void seesaw_NeoPixel::setPin(uint8_t p)
 {
   DBG_PRINTF_DEBUG("neopixel::setpin pre");
   this->write8(SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_PIN, p);
-  
 }
 
 // Set pixel color from separate R,G,B components:
@@ -245,10 +245,9 @@ void seesaw_NeoPixel::setBrightness(uint8_t b) { brightness = b; }
 void seesaw_NeoPixel::output_stream()
 {
 
- 
-
   for (int i = 0; i < this->numLEDs; i++)
   {
+    DBG_PRINTF_DEBUG("OUTPUT_STREAM");
     *ptr_output_buffer = (ptr_pixels->r);
     ptr_output_buffer++;
     *ptr_output_buffer = (ptr_pixels->g);

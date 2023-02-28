@@ -31,7 +31,6 @@
 #include "Adafruit_Crickit.hpp"
 #include "omwof_ss_neopix.hpp"
 
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -113,13 +112,15 @@ int main(void)
   HAL_Delay(3000);
   DBG_PRINTF_DEBUG("USB init");
   init_I2C1();
-   neopix1 = new seesaw_NeoPixel(&hi2c1,1,((uint8_t)27 << 1));
-
+  neopix1 = new seesaw_NeoPixel(&hi2c1, 1, ((uint8_t)27 << 1));
 
   neopix1->begin(-1, true);
 
   HAL_Delay(200);
-  if(neopix1->sendtestbyte()){DBG_PRINTF_DEBUG("testbyte success");}
+  if (neopix1->sendtestbyte()==0)
+  {
+    DBG_PRINTF_DEBUG("testbyte success");
+  }
   BlinkLED(100, 3);
 
   while (1)
@@ -145,20 +146,9 @@ int main(void)
     DBG_PRINTF_DEBUG("transfer count %d", neopix1->hi2c->XferCount);
     DBG_PRINTF_DEBUG("transfer size %d", neopix1->hi2c->XferSize);
 
-    if (neopix1->get_i2cstate() == HAL_I2C_STATE_READY)
-    {
-      wheel_pos < 0xff ? wheel_pos++ : 0;
-      neopix1->setPixelColor((neopix1->numPixels() - 1), neopix1->Wheel(wheel_pos));
-      neopix1->show();
-
-      DBG_PRINTF_DEBUG("pixel output");
-    }
-    else{
-      DBG_PRINTF_DEBUG("no pixel output");
-      neopix1->parse_HAL_I2C_StateTypeDef(neopix1->get_i2cstate());
-    }
-
-    HAL_Delay(100);
+    wheel_pos < 0xff ? wheel_pos++ : 0;
+   // neopix1->setPixelColor((neopix1->numPixels() - 1), neopix1->Wheel(wheel_pos));
+    neopix1->show();
   }
 }
 void SystemClock_Config(void)

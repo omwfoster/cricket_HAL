@@ -95,7 +95,7 @@ bool Adafruit_seesaw::set_I2C(I2C_HandleTypeDef *hI2c)
 bool Adafruit_seesaw::begin(uint8_t addr, int8_t flow, bool reset)
 {
 
-  if (HAL_I2C_IsDeviceReady(this->hi2c, (this->i2c_address_local << 1), 10, 0))
+  if (HAL_I2C_IsDeviceReady(this->hi2c, (uint16_t)(addr << 1), 10, 0))
   {
     DBG_PRINTF_TRACE("seesaw::begin");
 

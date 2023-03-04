@@ -866,11 +866,10 @@ bool Adafruit_seesaw::read(uint8_t regHigh, uint8_t regLow, uint8_t *buf,
                            uint16_t num, uint16_t delay)
 {
 
-#ifdef SEESAW_I2C_DEBUG
-
-  I2Cdev_readBytes(this->i2c_address_local, regHigh, regLow, num, buf);
-  DBG_PRINTF_DEBUG("reading %d bytes - %d delay", num, delay);
-#endif
+  if (I2Cdev_readBytes(this->i2c_address_local, regHigh, regLow, num, buf) == 0)
+  {
+    DBG_PRINTF_DEBUG("reading %d bytes - val %d", num, *buf);
+  }
 
   return true;
 }
@@ -1030,17 +1029,9 @@ uint8_t Adafruit_seesaw::I2C_bus_scan()
 {
   HAL_StatusTypeDef ret;
   uint8_t i;
-/* 
-  ret = HAL_I2C_IsDeviceReady(this->hi2c, 0x49 << 1, 3, 5);
-  if (ret == HAL_OK) //No ACK Received At That Address 
-  {
-    this->parse_HAL_StatusTypeDef(ret);
-    this->i2c_address_local = i;
-    DBG_PRINTF_TRACE("I2C reponse 1: %d", this->i2c_address_local);
-    return i;
-  } */
 
-  for (i = 1; i < 128; i++)
+  DBG_PRINTF_TRACE("I2C bus scan: ");
+  for (uint8_t i = 1; i < 128; i++)
   {
     ret = HAL_I2C_IsDeviceReady(this->hi2c, (uint16_t)(i << 1), 3, 5);
 
@@ -1048,7 +1039,7 @@ uint8_t Adafruit_seesaw::I2C_bus_scan()
     {
       this->parse_HAL_StatusTypeDef(ret);
       this->i2c_address_local = i;
-      DBG_PRINTF_TRACE("I2C reponse: %d", this->i2c_address_local);
+      DBG_PRINTF_TRACE("I2C reponse: %x", this->i2c_address_local);
       return i;
     }
   }

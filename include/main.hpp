@@ -65,6 +65,9 @@ void Error_Handler(void);
 #define LED_GPIO_Port GPIOC
 /* USER CODE BEGIN Private defines */
 
+#define CRICKIT_NUM_TOUCH   4
+#define CAPTOUCH_THRESH   500
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

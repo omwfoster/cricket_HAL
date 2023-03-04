@@ -117,16 +117,27 @@ int main(void)
   neopix1->begin(-1, true);
 
   HAL_Delay(200);
-  if (neopix1->sendtestbyte()==0)
+  if (neopix1->sendtestbyte() == 0)
   {
     DBG_PRINTF_DEBUG("testbyte success");
   }
   BlinkLED(100, 3);
-
+  uint8_t buf[2];
   while (1)
   {
+
+    for (int i = 0; i < CRICKIT_NUM_TOUCH; i++)
+    { // check each touch input
+      uint16_t val = neopix1->touchRead(i);
+
+      if (val > CAPTOUCH_THRESH)
+      {
+        DBG_PRINTF_DEBUG("buf %d", val);
+      }
+    }
+
     BlinkLED(200, 3);
-    DBG_PRINTF_DEBUG("loop");
+    
     if (t_callback | r_callback)
     {
       t_callback = false;
@@ -147,7 +158,7 @@ int main(void)
     DBG_PRINTF_DEBUG("transfer size %d", neopix1->hi2c->XferSize);
 
     wheel_pos < 0xff ? wheel_pos++ : 0;
-   // neopix1->setPixelColor((neopix1->numPixels() - 1), neopix1->Wheel(wheel_pos));
+    // neopix1->setPixelColor((neopix1->numPixels() - 1), neopix1->Wheel(wheel_pos));
     neopix1->show();
   }
 }

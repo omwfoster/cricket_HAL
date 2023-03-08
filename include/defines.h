@@ -49,6 +49,8 @@
 #define I2Cx_SDA_GPIO_PORT              GPIOB
 #define I2Cx_SCL_SDA_AF                 GPIO_AF4_I2C1
 
+
+
 /* Definition for I2Cx's NVIC */
 #define I2Cx_EV_IRQn                    I2C1_EV_IRQn
 #define I2Cx_ER_IRQn                    I2C1_ER_IRQn

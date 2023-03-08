@@ -52,12 +52,12 @@ extern I2C_HandleTypeDef hi2c1;
 	while(I2CDev_Driver.GetStatus().busy)
 */
 #define _i2c_transmit(dev_addr, data, len, pending) \
-    HAL_I2C_Master_Transmit(&hi2c1, (uint16_t)(dev_addr<<1), data, len, 10); \
+    HAL_I2C_Master_Transmit_IT(&hi2c1, ((uint16_t)(dev_addr<<1)|0x01), data, len); \
 	while(HAL_I2C_GetState(&hi2c1) != HAL_I2C_STATE_READY);
 
 
 #define _i2c_receive(dev_addr, data, len, pending) \
-	HAL_I2C_Master_Receive(&hi2c1, (uint16_t)(dev_addr<<1), data, len, 10); \
+	HAL_I2C_Master_Receive_IT(&hi2c1, ((uint16_t)(dev_addr<<1)|0x00), data, len); \
 	while(HAL_I2C_GetState(&hi2c1) != HAL_I2C_STATE_READY);
 
 #define i2c_transmit_ack(dev_addr, data, len) 	_i2c_transmit(dev_addr, data, len, true)

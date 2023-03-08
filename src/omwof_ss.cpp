@@ -353,6 +353,7 @@ uint16_t Adafruit_seesaw::touchRead(uint8_t pin)
                    3000 + retry * 1000))
     {
       ret = ((uint16_t)buf[0] << 8) | buf[1];
+      
       break;
     }
   }
@@ -951,10 +952,12 @@ bool Adafruit_seesaw::sendtestbyte()
   while (!(hi2c->State == HAL_I2C_STATE_READY))
   {
     DBG_PRINTF_ERROR("not ready");
+    return false;
   }
   DBG_PRINTF_ERROR("writebyte return %d , CODE: %d", this->i2c_address_local, I2Cdev_writeByte(this->i2c_address_local, SEESAW_GPIO_BASE, SEESAW_NEOPIXEL_PIN, 0x1));
 
-  return false;
+  return true
+  ;
 }
 
 bool Adafruit_seesaw::parse_HAL_StatusTypeDef(HAL_StatusTypeDef h)

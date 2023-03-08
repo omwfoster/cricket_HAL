@@ -112,31 +112,32 @@ int main(void)
   HAL_Delay(3000);
   DBG_PRINTF_DEBUG("USB init");
   init_I2C1();
-  neopix1 = new seesaw_NeoPixel(&hi2c1, 1, ((uint8_t)27 << 1));
-
+  neopix1 = new seesaw_NeoPixel(&hi2c1, 1, 27);
+  neopix1->SWReset();
   neopix1->begin(-1, true);
 
   HAL_Delay(200);
-  if (neopix1->sendtestbyte() == 0)
+  if (neopix1->sendtestbyte())
   {
     DBG_PRINTF_DEBUG("testbyte success");
   }
-  BlinkLED(100, 3);
-  uint8_t buf[2];
+  BlinkLED(300,2);
+  uint16_t val = 0;
   while (1)
   {
-
+    
     for (int i = 0; i < CRICKIT_NUM_TOUCH; i++)
     { // check each touch input
-      uint16_t val = neopix1->touchRead(i);
+
+      val = neopix1->touchRead(i);
 
       if (val > CAPTOUCH_THRESH)
       {
-        DBG_PRINTF_DEBUG("buf %d", val);
+        DBG_PRINTF_DEBUG("touchRead pin: %d value: %d", i , val);
       }
+      val = 0;
     }
 
-    BlinkLED(200, 3);
     
     if (t_callback | r_callback)
     {
@@ -150,12 +151,10 @@ int main(void)
       DBG_PRINTF_DEBUG("error callback");
     }
 
-    HAL_Delay(100);
     // todo:log the next conditional
     // parse_HAL_I2C_StateTypeDef should be a protected meber
     // we should simply call neopix->get_state_i2c(to be implemented)
-    DBG_PRINTF_DEBUG("transfer count %d", neopix1->hi2c->XferCount);
-    DBG_PRINTF_DEBUG("transfer size %d", neopix1->hi2c->XferSize);
+ 
 
     wheel_pos < 0xff ? wheel_pos++ : 0;
     // neopix1->setPixelColor((neopix1->numPixels() - 1), neopix1->Wheel(wheel_pos));

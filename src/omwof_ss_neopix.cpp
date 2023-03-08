@@ -52,6 +52,7 @@ seesaw_NeoPixel::seesaw_NeoPixel(I2C_HandleTypeDef *x, uint16_t numled, uint8_t 
       begun(false), numBytes(0), pin(-1), brightness(0)
 {
 
+  this->updateLength(numled);
   this->pin = pin;
 }
 

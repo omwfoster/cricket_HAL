@@ -176,8 +176,8 @@ extern "C" {
 #ifndef STM32F4xx
 #define STM32F4xx
 #endif
-#ifndef STM32F4XX
-#define STM32F4XX
+#ifndef STM32F405
+#define STM32F405
 #endif
 #include "stm32f4xx.h"
 #include "stm32f4xx_hal.h"
@@ -201,9 +201,7 @@ extern "C" {
 #endif
 
 /* Init main libraries used everywhere */
-#include "defines.h"
-#include "tm_stm32_rcc.h"
-#include "tm_stm32_gpio.h"
+
 
 /**
  * @}

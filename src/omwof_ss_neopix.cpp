@@ -54,6 +54,8 @@ seesaw_NeoPixel::seesaw_NeoPixel(I2C_HandleTypeDef *x, uint16_t numled, uint8_t 
 
   this->updateLength(numled);
   this->pin = pin;
+  DBG_PRINTF_TRACE("set pin - %d",this->pin);
+  
 }
 
 seesaw_NeoPixel::~seesaw_NeoPixel()
@@ -108,7 +110,7 @@ void seesaw_NeoPixel::updateLength(uint16_t n)
   DBG_PRINTF_TRACE("malloc pixels");
 
   uint8_t buf[] = {(uint8_t)(numBytes >> 8), (uint8_t)(numBytes & 0xFF)};
-  this->write(SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_BUF_LENGTH, buf, 2);
+  this->write(SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_BUF_LENGTH, buf, 2);  //TODO - point of failure
 }
 
 void seesaw_NeoPixel::updateType(neoPixelType t)

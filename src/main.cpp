@@ -114,7 +114,7 @@ int main(void)
   init_I2C1();
   neopix1 = new seesaw_NeoPixel(&hi2c1, 1, 27);
   //neopix1->SWReset();
-  //neopix1->begin(-1, true);
+  neopix1->begin(-1, true);
 
   HAL_Delay(200);
   if (neopix1->sendtestbyte())

@@ -35,23 +35,13 @@ THE SOFTWARE.
 #include <string.h>
 #include "debug_print.h"
 
-//#include <i2c.h>
 #include "stm32f4xx_hal.h"
 
-//extern ARM_DRIVER_I2C I2CDev_Driver;
+
 extern I2C_HandleTypeDef hi2c1;
 
 // i2c entry point
-/*
-#define _i2c_transmit(dev_addr, data, len, pending) \
-	I2CDev_Driver.MasterTransmit(dev_addr, data, len, pending);\
-	while(I2CDev_Driver.GetStatus().busy)
 
-
-#define _i2c_receive(dev_addr, data, len, pending) \
-	I2CDev_Driver.MasterReceive(dev_addr, data, len, pending); \
-	while(I2CDev_Driver.GetStatus().busy)
-*/
 #define _i2c_transmit(dev_addr, data, len, pending) \
 	DBG_PRINTF_TRACE("transmit nack"); \ 
     HAL_I2C_Master_Transmit_IT(&hi2c1, ((uint16_t)(dev_addr<<1)|0x01), data, len); \

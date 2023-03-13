@@ -113,6 +113,7 @@ int main(void)
   DBG_PRINTF_DEBUG("USB init");
   init_I2C1();
   neopix1 = new seesaw_NeoPixel(&hi2c1, 1, 27);
+  
   //neopix1->SWReset();
   neopix1->begin(-1, true);
 
@@ -151,9 +152,8 @@ int main(void)
       DBG_PRINTF_DEBUG("error callback");
     }
 
-    // todo:log the next conditional
-    // parse_HAL_I2C_StateTypeDef should be a protected meber
-    // we should simply call neopix->get_state_i2c(to be implemented)
+    // TODO:log the next conditional
+
  
 
     wheel_pos < 0xff ? wheel_pos++ : 0;

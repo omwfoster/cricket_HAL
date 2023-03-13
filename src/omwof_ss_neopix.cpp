@@ -52,10 +52,10 @@ seesaw_NeoPixel::seesaw_NeoPixel(I2C_HandleTypeDef *x, uint16_t numled, uint8_t 
       begun(false), numBytes(0), pin(-1), brightness(0)
 {
 
+  
   this->updateLength(numled);
   this->pin = pin;
-  DBG_PRINTF_TRACE("set pin - %d",this->pin);
-  
+  DBG_PRINTF_TRACE("set pin - %d", this->pin);
 }
 
 seesaw_NeoPixel::~seesaw_NeoPixel()
@@ -95,22 +95,30 @@ bool seesaw_NeoPixel::begin()
 
 void seesaw_NeoPixel::updateLength(uint16_t n)
 {
-  DBG_PRINTF_TRACE("dealloc pixels");
-  if (!(ptr_pixels == NULL))
-    // free(ptr_pixels); // Free existing data (if any)
-    if (!(this->ptr_output_buffer == NULL))
-      // free(this->ptr_output_buffer); // Free existing data (if any)
 
-      // Allocate new data -- note: ALL PIXELS ARE CLEARED
-      this->numBytes = n * sizeof(colour_RGB);
-  ptr_pixels = (colour_RGB *)malloc(this->numBytes);
+  if (!(this->ptr_pixels == NULL))
+  {
+    DBG_PRINTF_TRACE("dealloc pixels");
+    free(this->ptr_pixels); // Free existing data (if any)
+  }
 
-  memset(ptr_pixels, 0, this->numBytes);
-  this->numLEDs = n;
+  if (!(this->ptr_output_buffer == NULL))
+  {
+    DBG_PRINTF_TRACE("dealloc buffer"); 
+    free(this->ptr_output_buffer); // Free existing data (if any)
+  }
+
+  this->numBytes = n * sizeof(colour_RGB);
+  this->ptr_pixels = (colour_RGB *)malloc(this->numBytes);
+  this->ptr_output_buffer = (uint8_t *)malloc(n*3);
+  memset(this->ptr_pixels, 0, this->numBytes);
+  memset(this->ptr_output_buffer,0,(n*3));
   DBG_PRINTF_TRACE("malloc pixels");
 
-  uint8_t buf[] = {(uint8_t)(numBytes >> 8), (uint8_t)(numBytes & 0xFF)};
-  this->write(SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_BUF_LENGTH, buf, 2);  //TODO - point of failure
+  this->numLEDs = n;
+  uint8_t x = (uint8_t)n;
+ 
+  this->write(SEESAW_NEOPIXEL_BASE, SEESAW_NEOPIXEL_BUF_LENGTH, &x  , 1 ); // TODO - point of failure
 }
 
 void seesaw_NeoPixel::updateType(neoPixelType t)
@@ -137,7 +145,6 @@ void seesaw_NeoPixel::show(void)
   // while (!canShow())
   //  ;
 
-  //TODO:POSSIBLE CULPRIT FOR HANGING
   this->output_stream();
   this->write((uint8_t)SEESAW_NEOPIXEL_BASE, (uint8_t)SEESAW_NEOPIXEL_SHOW, this->ptr_output_buffer, numBytes);
   DBG_PRINTF_DEBUG("neopixel::write");

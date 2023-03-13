@@ -40,16 +40,18 @@ THE SOFTWARE.
 
 extern I2C_HandleTypeDef hi2c1;
 
+uint8_t output_buffer[256];
+uint8_t read_buffer[256];
+
 // i2c entry point
 
-#define _i2c_transmit(dev_addr, data, len, pending) \
-	DBG_PRINTF_TRACE("transmit nack"); \ 
-    HAL_I2C_Master_Transmit_IT(&hi2c1, ((uint16_t)(dev_addr<<1)|0x01), data, len); \
-	////while(HAL_I2C_GetState(&hi2c1) != HAL_I2C_STATE_READY); //TODO : STATUS NEVER REACHED - test without loop
+#define _i2c_transmit(dev_addr, data, len, pending) \ 
+    HAL_I2C_Master_Transmit(&hi2c1, ((uint16_t)(dev_addr<<1)), data, len,50); // TODO :this is where it hangs
+	
 
 
 #define _i2c_receive(dev_addr, data, len, pending) \
-	HAL_I2C_Master_Receive_IT(&hi2c1, ((uint16_t)(dev_addr<<1)|0x00), data, len); \
+	HAL_I2C_Master_Receive(&hi2c1, ((uint16_t)(dev_addr<<1)|0x00), data, len,50); \
 	while(HAL_I2C_GetState(&hi2c1) != HAL_I2C_STATE_READY);
 
 #define i2c_transmit_ack(dev_addr, data, len) 	_i2c_transmit(dev_addr, data, len, true)
@@ -231,13 +233,22 @@ int8_t I2Cdev_readBitsW(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uin
  */
 int8_t 	I2Cdev_writeBytes(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8_t len, uint8_t *data) {
 	int8_t err;
-	uint8_t ts_data[len+2];
+	
 
-	ts_data[0] = reg_high;
-	ts_data[1] = reg_low;
-	memcpy(ts_data+1, data, len);
+	output_buffer[0] = reg_high;
+	output_buffer[1] = reg_low;
 
-	err = i2c_transmit_nack(dev_addr, ts_data, len+1);
+
+	for(uint8_t i =0;i<len;i++ )
+	{
+		output_buffer[i+2]=*data;
+		data++;
+
+	}
+	
+	DBG_PRINTF_TRACE("pre -  transmit");
+
+	err = i2c_transmit_nack(dev_addr, output_buffer, len+2);
 	return err;
 }
 
@@ -249,12 +260,10 @@ int8_t 	I2Cdev_writeBytes(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, u
  * @return Status of operation (0 = success, <0 = error)
  */
 int8_t 	I2Cdev_writeByte(uint8_t dev_addr, uint8_t reg_high,uint8_t reg_low, uint8_t data) {
-	int8_t err;
+	
 
-	uint8_t ts_data[3] = {reg_high,reg_low, data};
-	err = i2c_transmit_nack(dev_addr, ts_data, 3);
-
-	return err;
+	return I2Cdev_writeBytes(dev_addr,reg_high,reg_low,1,&data);
+	
 }
 
 
@@ -264,12 +273,16 @@ int8_t 	I2Cdev_writeByte(uint8_t dev_addr, uint8_t reg_high,uint8_t reg_low, uin
  * @param data 		New byte value to write
  * @return Status of operation (0 = success, <0 = error)
  */
-int8_t 	I2Cdev_writeWord(uint8_t dev_addr, uint8_t reg_high,uint8_t reg_low, uint16_t data) {
-	int8_t err;
-	uint8_t ts_data[4] = {reg_high,reg_low, (data >> 8) & 0xFF, data & 0xFF};
+int8_t 	I2Cdev_writeWord(uint8_t dev_addr, uint8_t reg_high,uint8_t reg_low, uint16_t data) { 
+	
+	output_buffer[0] = reg_high;
+	output_buffer[1] = reg_low;
+	output_buffer[2] = (data >> 8) & 0xFF;
+	output_buffer[3] =  data & 0xFF;
+	
 
-	err = i2c_transmit_nack(dev_addr, ts_data, 4);
-	return err;
+	return i2c_transmit_nack(dev_addr, output_buffer, 4);
+	
 }
 
 

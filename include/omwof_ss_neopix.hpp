@@ -160,8 +160,8 @@ protected:
   uint32_t endTime; // Latch timing reference
   
 
-  colour_RGB * ptr_pixels;
-  uint8_t * ptr_output_buffer;
+  colour_RGB * ptr_pixels = NULL;
+  uint8_t * ptr_output_buffer = NULL;
   uint16_t type;
   
   

@@ -893,7 +893,10 @@ bool Adafruit_seesaw::write(uint8_t regHigh, uint8_t regLow,
                             uint8_t *buf = NULL, uint16_t num = 0)
 {
 
-  I2Cdev_writeBytes(this->i2c_address_local, regHigh, regLow, num, buf);
+
+  uint8_t ret = I2Cdev_writeBytes(this->i2c_address_local, regHigh, regLow, num, buf);
+  DBG_PRINTF_TRACE("address - %d reg-high %d reg_low %d length %d return %d",this->i2c_address_local, regHigh, regLow, num,ret);
+  
 
   return true;
 }
@@ -949,15 +952,14 @@ bool Adafruit_seesaw::sendtestbyte()
 {
   DBG_PRINTF_TRACE("version %d", this->getVersion());
 
-  while (!(hi2c->State == HAL_I2C_STATE_READY))
+  if (!(hi2c->State == HAL_I2C_STATE_READY))
   {
     DBG_PRINTF_ERROR("not ready");
     return false;
   }
   DBG_PRINTF_ERROR("writebyte return %d , CODE: %d", this->i2c_address_local, I2Cdev_writeByte(this->i2c_address_local, SEESAW_GPIO_BASE, SEESAW_NEOPIXEL_PIN, 0x1));
 
-  return true
-  ;
+  return true;
 }
 
 bool Adafruit_seesaw::parse_HAL_StatusTypeDef(HAL_StatusTypeDef h)

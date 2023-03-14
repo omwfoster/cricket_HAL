@@ -280,7 +280,7 @@ public:
 
   virtual uint16_t analogRead(uint8_t pin);
 
-  uint16_t touchRead(uint8_t pin);
+  uint8_t touchRead(uint8_t pin);
 
   virtual void setPWMFreq(uint8_t pin, uint16_t freq);
 

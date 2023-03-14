@@ -30,13 +30,12 @@ THE SOFTWARE.
 ===============================================
 */
 
-
 #include "I2Cdev.h"
 #include <string.h>
 #include "debug_print.h"
+#include "stdbool.h"
 
 #include "stm32f4xx_hal.h"
-
 
 extern I2C_HandleTypeDef hi2c1;
 
@@ -45,21 +44,25 @@ uint8_t read_buffer[256];
 
 // i2c entry point
 
-#define _i2c_transmit(dev_addr, data, len, pending) \ 
-    HAL_I2C_Master_Transmit(&hi2c1, ((uint16_t)(dev_addr<<1)), data, len,50); // TODO :this is where it hangs
-	
+uint8_t i2c_transmit(uint8_t dev_addr, uint8_t *data, uint8_t len, bool pending)
+{
+	return HAL_I2C_Master_Transmit(&hi2c1, ((uint16_t)(dev_addr << 1) | 0x01), data, len, 50); // TODO :this is where it hangs
+}
 
+uint8_t i2c_receive(uint8_t dev_addr, uint8_t *data, uint8_t len, bool pending)
+{
+	uint8_t err = HAL_I2C_Master_Receive(&hi2c1, ((uint16_t)(dev_addr << 1) | 0x00), data, len, 50);
+	while (HAL_I2C_GetState(&hi2c1) != HAL_I2C_STATE_READY)
+	{
+	}
+	return err;
+}
 
-#define _i2c_receive(dev_addr, data, len, pending) \
-	HAL_I2C_Master_Receive(&hi2c1, ((uint16_t)(dev_addr<<1)|0x00), data, len,50); \
-	while(HAL_I2C_GetState(&hi2c1) != HAL_I2C_STATE_READY);
+#define i2c_transmit_ack(dev_addr, data, len) i2c_transmit(dev_addr, data, len, true)
+#define i2c_transmit_nack(dev_addr, data, len) i2c_transmit(dev_addr, data, len, false)
 
-#define i2c_transmit_ack(dev_addr, data, len) 	_i2c_transmit(dev_addr, data, len, true)
-#define i2c_transmit_nack(dev_addr, data, len) 	_i2c_transmit(dev_addr, data, len, false)
-
-#define i2c_receive_ack(dev_addr, data, len)	_i2c_receive(dev_addr, data, len, true)
-#define i2c_receive_nack(dev_addr, data, len)	_i2c_receive(dev_addr, data, len, false)
-
+#define i2c_receive_ack(dev_addr, data, len) i2c_receive(dev_addr, data, len, true)
+#define i2c_receive_nack(dev_addr, data, len) i2c_receive(dev_addr, data, len, false)
 
 /** Read several byte from an 8-bit device register.
  * @param dev_addr 	I2C slave device address
@@ -68,21 +71,24 @@ uint8_t read_buffer[256];
  * @param data 		Buffer to save data into
  * @return Status of read operation (0 = success, <0 = error)
  */
-int8_t I2Cdev_readBytes(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8_t len, uint8_t *data) {
+int8_t I2Cdev_readBytes(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8_t len, uint8_t *data)
+{
 	int8_t err = 0;
-	uint8_t reg_data[2] = {reg_high,reg_low};
+	uint8_t reg_data[2] = {reg_high, reg_low};
 
 	err = i2c_transmit_ack(dev_addr, reg_data, 2);
 
-	if(err < 0) {
+	if (err < 0)
+	{
 		return err;
 	}
+
+	HAL_Delay(50);
 
 	err = i2c_receive_nack(dev_addr, data, len);
 
 	return err;
 }
-
 
 /** Read a single byte from a 8-bit device register.
  * @param dev_addr 	I2C slave device address
@@ -90,10 +96,10 @@ int8_t I2Cdev_readBytes(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uin
  * @param data 		Buffer to save data into
  * @return Status of read operation (0 = success, <0 = error)
  */
-int8_t 	I2Cdev_readByte(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8_t *data) {
-	return I2Cdev_readBytes(dev_addr,reg_high,reg_low, 1, data);
+int8_t I2Cdev_readByte(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8_t *data)
+{
+	return I2Cdev_readBytes(dev_addr, reg_high, reg_low, 1, data);
 }
-
 
 /** Read a several 16-bit words from a 16-bit device register.
  * @param dev_addr 	I2C slave device address
@@ -102,32 +108,35 @@ int8_t 	I2Cdev_readByte(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uin
  * @param data 		Buffer to save data into
  * @return Status of read operation (true = success)
  */
-int8_t 	I2Cdev_readWords(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8_t len, uint16_t *data) {
+int8_t I2Cdev_readWords(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8_t len, uint16_t *data)
+{
 	int8_t err;
-	uint16_t bytes_num = len*2;
+	uint16_t bytes_num = len * 2;
 
 	uint8_t reg_info[2] = {reg_high, reg_low};
 	err = i2c_transmit_ack(dev_addr, reg_info, 2);
 
-	if(err < 0) {
+	if (err < 0)
+	{
 		return err;
 	}
 
 	uint8_t words_in_bytes[bytes_num];
 	err = i2c_receive_nack(dev_addr, words_in_bytes, bytes_num);
 
-	if(err < 0) {
+	if (err < 0)
+	{
 		return err;
 	}
 
 	uint8_t words_cnt = 0;
-	for(uint16_t i=0; i<bytes_num; i+=2) {
-		data[words_cnt++] = (words_in_bytes[i] << 8) | words_in_bytes[i+1];
+	for (uint16_t i = 0; i < bytes_num; i += 2)
+	{
+		data[words_cnt++] = (words_in_bytes[i] << 8) | words_in_bytes[i + 1];
 	}
 
 	return 0;
 }
-
 
 /** Read a single word from a 16-bit device register.
  * @param dev_addr 	I2C slave device address
@@ -135,10 +144,10 @@ int8_t 	I2Cdev_readWords(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, ui
  * @param data 		Container for single word
  * @return Status of read operation (0 = success, <0 = error)
  */
-int8_t 	I2Cdev_readWord(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint16_t *data) {
+int8_t I2Cdev_readWord(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint16_t *data)
+{
 	return I2Cdev_readWords(dev_addr, reg_high, reg_low, 1, data);
 }
-
 
 /** Read a single bit from a 8-bit device register.
  * @param dev_addr 	I2C slave device address
@@ -147,15 +156,15 @@ int8_t 	I2Cdev_readWord(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uin
  * @param data 		Container for single bit value
  * @return Status of read operation (0 = success, <0 = error)
  */
-int8_t I2Cdev_readBit(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8_t bitn, uint8_t *data) {
+int8_t I2Cdev_readBit(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8_t bitn, uint8_t *data)
+{
 	int8_t err;
 
-	err = I2Cdev_readByte(dev_addr,reg_high,reg_low, data);
+	err = I2Cdev_readByte(dev_addr, reg_high, reg_low, data);
 	*data = (*data >> bitn) & 0x01;
 
 	return err;
 }
-
 
 /** Read several bits from a 8-bit device register.
  * @param dev_addr 	I2C slave device address
@@ -166,12 +175,13 @@ int8_t I2Cdev_readBit(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8
  * @return Status of read operation (0 = success, <0 = error)
  */
 int8_t I2Cdev_readBits(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8_t start_bit,
-		uint8_t len, uint8_t *data)
+					   uint8_t len, uint8_t *data)
 {
 	int8_t err;
 
 	uint8_t b;
-	if ((err = I2Cdev_readByte(dev_addr,reg_high,reg_low, &b)) == 0) {
+	if ((err = I2Cdev_readByte(dev_addr, reg_high, reg_low, &b)) == 0)
+	{
 		uint8_t mask = ((1 << len) - 1) << (start_bit - len + 1);
 		b &= mask;
 		b >>= (start_bit - len + 1);
@@ -181,7 +191,6 @@ int8_t I2Cdev_readBits(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint
 	return err;
 }
 
-
 /** Read a single bit from a 16-bit device register.
  * @param dev_addr 	I2C slave device address
  * @param reg_addr 	Register regAddr to read from
@@ -189,15 +198,15 @@ int8_t I2Cdev_readBits(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint
  * @param data 		Container for single bit value
  * @return Status of read operation (true = success)
  */
-int8_t 	I2Cdev_readBitW(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8_t bit_n, uint16_t *data) {
+int8_t I2Cdev_readBitW(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8_t bit_n, uint16_t *data)
+{
 	int8_t err;
 
-	err = I2Cdev_readWord(dev_addr,reg_high,reg_low, data);
+	err = I2Cdev_readWord(dev_addr, reg_high, reg_low, data);
 	*data = (*data >> bit_n) & 0x01;
 
 	return err;
 }
-
 
 /** Read several bits from a 16-bit device register.
  * @param dev_addr 	I2C slave device address
@@ -208,21 +217,21 @@ int8_t 	I2Cdev_readBitW(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uin
  * @return Status of read operation (0 = success, <0 = error)
  */
 int8_t I2Cdev_readBitsW(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8_t start_bit,
-		uint8_t len, uint16_t *data)
+						uint8_t len, uint16_t *data)
 {
-    int8_t err;
-    uint16_t w;
+	int8_t err;
+	uint16_t w;
 
-    if ((err = I2Cdev_readWord(dev_addr,reg_high,reg_low, &w)) == 0) {
-        uint16_t mask = ((1 << len) - 1) << (start_bit - len + 1);
-        w &= mask;
-        w >>= (start_bit - len + 1);
-        *data = w;
-    }
+	if ((err = I2Cdev_readWord(dev_addr, reg_high, reg_low, &w)) == 0)
+	{
+		uint16_t mask = ((1 << len) - 1) << (start_bit - len + 1);
+		w &= mask;
+		w >>= (start_bit - len + 1);
+		*data = w;
+	}
 
-    return err;
+	return err;
 }
-
 
 /** Write multiple bytes to an 8-bit device register.
  * @param dev_addr 	I2C slave device address
@@ -231,27 +240,24 @@ int8_t I2Cdev_readBitsW(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uin
  * @param data 		Buffer to copy new data from
  * @return Status of operation (0 = success, <0 = error)
  */
-int8_t 	I2Cdev_writeBytes(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8_t len, uint8_t *data) {
-	int8_t err;
+int8_t I2Cdev_writeBytes(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8_t len, uint8_t *data)
+{
 	
 
 	output_buffer[0] = reg_high;
 	output_buffer[1] = reg_low;
 
-
-	for(uint8_t i =0;i<len;i++ )
+	for (uint8_t i = 0; i < len; i++)
 	{
-		output_buffer[i+2]=*data;
+		output_buffer[i + 2] = *data;
 		data++;
-
 	}
-	
+
 	DBG_PRINTF_TRACE("pre -  transmit");
 
-	err = i2c_transmit_nack(dev_addr, output_buffer, len+2);
-	return err;
-}
+	return	i2c_transmit_nack(dev_addr, output_buffer, len + 2);
 
+}
 
 /** Write single byte to an 8-bit device register.
  * @param dev_addr 	I2C slave device address
@@ -259,13 +265,11 @@ int8_t 	I2Cdev_writeBytes(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, u
  * @param data 		New byte value to write
  * @return Status of operation (0 = success, <0 = error)
  */
-int8_t 	I2Cdev_writeByte(uint8_t dev_addr, uint8_t reg_high,uint8_t reg_low, uint8_t data) {
-	
+int8_t I2Cdev_writeByte(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8_t data)
+{
 
-	return I2Cdev_writeBytes(dev_addr,reg_high,reg_low,1,&data);
-	
+	return I2Cdev_writeBytes(dev_addr, reg_high, reg_low, 1, &data);
 }
-
 
 /** Write single 16-bit word to an 16-bit device register.
  * @param dev_addr 	I2C slave device address
@@ -273,18 +277,16 @@ int8_t 	I2Cdev_writeByte(uint8_t dev_addr, uint8_t reg_high,uint8_t reg_low, uin
  * @param data 		New byte value to write
  * @return Status of operation (0 = success, <0 = error)
  */
-int8_t 	I2Cdev_writeWord(uint8_t dev_addr, uint8_t reg_high,uint8_t reg_low, uint16_t data) { 
-	
+int8_t I2Cdev_writeWord(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint16_t data)
+{
+
 	output_buffer[0] = reg_high;
 	output_buffer[1] = reg_low;
 	output_buffer[2] = (data >> 8) & 0xFF;
-	output_buffer[3] =  data & 0xFF;
-	
+	output_buffer[3] = data & 0xFF;
 
 	return i2c_transmit_nack(dev_addr, output_buffer, 4);
-	
 }
-
 
 /** Write multiple words to a 16-bit device register.
  * @param dev_addr 	I2C slave device address
@@ -293,24 +295,25 @@ int8_t 	I2Cdev_writeWord(uint8_t dev_addr, uint8_t reg_high,uint8_t reg_low, uin
  * @param data 		Buffer to copy new data from
  * @return Status of operation (0 = success, <0 = error)
  */
-int8_t 	I2Cdev_writeWords(uint8_t dev_addr, uint8_t reg_high,uint8_t reg_low, uint8_t len, uint16_t *data) {
-	uint16_t bytes_num = len*2+2;
+int8_t I2Cdev_writeWords(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8_t len, uint16_t *data)
+{
+	uint16_t bytes_num = len * 2 + 2;
 	uint8_t bytes[bytes_num];
 
 	bytes[0] = reg_high;
 	bytes[1] = reg_low;
 
 	uint16_t bytes_pos = 2;
-	for(uint8_t i=0; i<len; i++) {
+	for (uint8_t i = 0; i < len; i++)
+	{
 		bytes[bytes_pos] = (data[i] >> 8) & 0xFF;
-		bytes[bytes_pos+1] = data[i] & 0xFF;
+		bytes[bytes_pos + 1] = data[i] & 0xFF;
 
 		bytes_pos += 2;
 	}
 
 	return i2c_transmit_nack(dev_addr, bytes, bytes_num);
 }
-
 
 /** write a single bit in an 8-bit device register.
  * @param dev_addr 	I2C slave device address
@@ -319,20 +322,21 @@ int8_t 	I2Cdev_writeWords(uint8_t dev_addr, uint8_t reg_high,uint8_t reg_low, ui
  * @param data 		New bit value to write
  * @return Status of operation (0 = success, <0 = error)
  */
-int8_t 	I2Cdev_writeBit(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8_t bit_n, uint8_t data) {
+int8_t I2Cdev_writeBit(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8_t bit_n, uint8_t data)
+{
 	uint8_t b;
 	int8_t err;
 
 	err = I2Cdev_readByte(dev_addr, reg_high, reg_low, &b);
-	if(err < 0) {
+	if (err < 0)
+	{
 		return err;
 	}
 
-	b = (data != 0) ? (b | (1<<bit_n)) : (b &= ~(1<<bit_n));
+	b = (data != 0) ? (b | (1 << bit_n)) : (b &= ~(1 << bit_n));
 
 	return I2Cdev_writeByte(dev_addr, reg_high, reg_low, b);
 }
-
 
 /** write a single bit in a 16-bit device register.
  * @param dev_addr 	I2C slave device address
@@ -341,15 +345,15 @@ int8_t 	I2Cdev_writeBit(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uin
  * @param data 		New bit value to write
  * @return Status of operation (0 = success, <0 = error)
  */
-int8_t 	I2Cdev_writeBitW(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8_t bit_n, uint16_t data) {
+int8_t I2Cdev_writeBitW(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8_t bit_n, uint16_t data)
+{
 	uint16_t w;
-	I2Cdev_readWord(dev_addr, reg_high , reg_low, &w);
+	I2Cdev_readWord(dev_addr, reg_high, reg_low, &w);
 
-	w = (data != 0) ? (w | (1<<bit_n)) : (w &= ~(1<<bit_n));
+	w = (data != 0) ? (w | (1 << bit_n)) : (w &= ~(1 << bit_n));
 
-	return I2Cdev_writeWord(dev_addr,  reg_high,  reg_low, w);
+	return I2Cdev_writeWord(dev_addr, reg_high, reg_low, w);
 }
-
 
 /** Write multiple bits in an 8-bit device register.
  * @param dev_addr 	I2C slave device address
@@ -360,25 +364,26 @@ int8_t 	I2Cdev_writeBitW(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, ui
  * @return Status of operation (0 = success, <0 = error)
  */
 int8_t I2Cdev_writeBits(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8_t start_bit,
-		uint8_t len, uint8_t data)
+						uint8_t len, uint8_t data)
 {
-    uint8_t b;
-    int8_t err;
+	uint8_t b;
+	int8_t err;
 
-    if ((err = I2Cdev_readByte(dev_addr, reg_high, reg_low, &b)) == 0) {
-        uint8_t mask = ((1 << len) - 1) << (start_bit - len + 1);
-        data <<= (start_bit - len + 1); // shift data into correct position
-        data &= mask; // zero all non-important bits in data
-        b &= ~(mask); // zero all important bits in existing byte
-        b |= data; // combine data with existing byte
+	if ((err = I2Cdev_readByte(dev_addr, reg_high, reg_low, &b)) == 0)
+	{
+		uint8_t mask = ((1 << len) - 1) << (start_bit - len + 1);
+		data <<= (start_bit - len + 1); // shift data into correct position
+		data &= mask;					// zero all non-important bits in data
+		b &= ~(mask);					// zero all important bits in existing byte
+		b |= data;						// combine data with existing byte
 
-        return I2Cdev_writeByte(dev_addr,reg_high,reg_low, b);
-    }
-    else {
-        return err;
-    }
+		return I2Cdev_writeByte(dev_addr, reg_high, reg_low, b);
+	}
+	else
+	{
+		return err;
+	}
 }
-
 
 /** Write multiple bits in a 16-bit device register.
  * @param dev_addr 	I2C slave device address
@@ -389,20 +394,22 @@ int8_t I2Cdev_writeBits(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uin
  * @return Status of operation (0 = success, <0 = error)
  */
 int8_t I2Cdev_writeBitsW(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8_t start_bit,
-		uint8_t len, uint16_t data)
+						 uint8_t len, uint16_t data)
 {
-    uint16_t w;
-    int8_t err;
+	uint16_t w;
+	int8_t err;
 
-    if ((err = I2Cdev_readWord(dev_addr, reg_high, reg_low, &w)) != 0) {
-        uint16_t mask = ((1 << len) - 1) << (start_bit - len + 1);
-        data <<= (start_bit - len + 1); // shift data into correct position
-        data &= mask; // zero all non-important bits in data
-        w &= ~(mask); // zero all important bits in existing word
-        w |= data; // combine data with existing word
-        return I2Cdev_writeWord(dev_addr, reg_high, reg_low, w);
-    }
-    else {
-        return err;
-    }
+	if ((err = I2Cdev_readWord(dev_addr, reg_high, reg_low, &w)) != 0)
+	{
+		uint16_t mask = ((1 << len) - 1) << (start_bit - len + 1);
+		data <<= (start_bit - len + 1); // shift data into correct position
+		data &= mask;					// zero all non-important bits in data
+		w &= ~(mask);					// zero all important bits in existing word
+		w |= data;						// combine data with existing word
+		return I2Cdev_writeWord(dev_addr, reg_high, reg_low, w);
+	}
+	else
+	{
+		return err;
+	}
 }

@@ -341,17 +341,15 @@ uint16_t Adafruit_seesaw::analogRead(uint8_t pin)
  *
  *  @return     the analog value. This is an integer between 0 and 1023
  ****************************************************************************/
-uint8_t Adafruit_seesaw::touchRead(uint8_t pin)
+uint16_t Adafruit_seesaw::touchRead(uint8_t pin)
 {
-  uint8_t buf[2];
+  uint8_t buf[2] = {0,0};
   uint8_t p = pin;
 
-
-
-
-   this->read(SEESAW_TOUCH_BASE, SEESAW_TOUCH_CHANNEL_OFFSET + p, &buf[0], 1,1000);
-   
-  return buf[0];
+this->read(SEESAW_TOUCH_BASE, SEESAW_TOUCH_CHANNEL_OFFSET + p, &buf[0], 2,1000);
+  
+uint16_t ret = buf[0]<<8|buf[1];
+return ret;
   
 }
 
@@ -943,19 +941,7 @@ size_t Adafruit_seesaw::write(const char *str)
   return len;
 }
 
-bool Adafruit_seesaw::sendtestbyte()
-{
-  DBG_PRINTF_TRACE("version %d", this->getVersion());
 
-  if (!(hi2c->State == HAL_I2C_STATE_READY))
-  {
-    DBG_PRINTF_ERROR("not ready");
-    return false;
-  }
-  DBG_PRINTF_ERROR("writebyte return %d , CODE: %d", this->i2c_address_local, I2Cdev_writeByte(this->i2c_address_local, SEESAW_GPIO_BASE, SEESAW_NEOPIXEL_PIN, 0x1));
-
-  return true;
-}
 
 bool Adafruit_seesaw::parse_HAL_StatusTypeDef(HAL_StatusTypeDef h)
 {

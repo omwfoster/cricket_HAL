@@ -46,16 +46,13 @@ uint8_t read_buffer[256];
 
 uint8_t i2c_transmit(uint8_t dev_addr, uint8_t *data, uint8_t len, bool pending)
 {
-	return HAL_I2C_Master_Transmit(&hi2c1, ((uint16_t)(dev_addr << 1) | 0x01), data, len, 50); // TODO :this is where it hangs
+	return HAL_I2C_Master_Transmit(&hi2c1, ((uint16_t)((dev_addr << 1)|0x1) ), data, len, 50); // TODO :this is where it hangs
 }
 
 uint8_t i2c_receive(uint8_t dev_addr, uint8_t *data, uint8_t len, bool pending)
 {
-	uint8_t err = HAL_I2C_Master_Receive(&hi2c1, ((uint16_t)(dev_addr << 1) | 0x00), data, len, 50);
-	while (HAL_I2C_GetState(&hi2c1) != HAL_I2C_STATE_READY)
-	{
-	}
-	return err;
+	return HAL_I2C_Master_Receive(&hi2c1, ((uint16_t)((dev_addr << 0)|0x0) ), data, len, 50);
+
 }
 
 #define i2c_transmit_ack(dev_addr, data, len) i2c_transmit(dev_addr, data, len, true)
@@ -78,14 +75,13 @@ int8_t I2Cdev_readBytes(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uin
 
 	err = i2c_transmit_ack(dev_addr, reg_data, 2);
 
-	if (err < 0)
-	{
-		return err;
-	}
+	
 
 	HAL_Delay(50);
 
 	err = i2c_receive_nack(dev_addr, data, len);
+
+	HAL_Delay(50);
 
 	return err;
 }

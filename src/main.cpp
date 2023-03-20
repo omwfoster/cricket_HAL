@@ -117,11 +117,7 @@ int main(void)
   //neopix1->SWReset();
   neopix1->begin(-1, true);
 
-  HAL_Delay(200);
-  if (neopix1->sendtestbyte())
-  {
-    DBG_PRINTF_DEBUG("testbyte success");
-  }
+
   BlinkLED(300,2);
   uint16_t val = 0;
   while (1)
@@ -132,10 +128,9 @@ int main(void)
 
       val = neopix1->touchRead(i);
 
-      if (val > CAPTOUCH_THRESH)
-      {
+     
         DBG_PRINTF_DEBUG("touchRead pin: %d value: %d", i , val);
-      }
+   
       val = 0;
     }
 
@@ -157,7 +152,7 @@ int main(void)
  
 
     wheel_pos < 0xff ? wheel_pos++ : 0;
-    // neopix1->setPixelColor((neopix1->numPixels() - 1), neopix1->Wheel(wheel_pos));
+    neopix1->setPixelColor((neopix1->numPixels() - 1), neopix1->Wheel(wheel_pos));
     neopix1->show();
   }
 }

@@ -29,6 +29,7 @@
 #define TM_DEFINES_H
 
 #define STM32F4xx
+#define STM32F405
 
 #define COUNTOF(__BUFFER__)   (sizeof(__BUFFER__) / sizeof(*(__BUFFER__)))
 

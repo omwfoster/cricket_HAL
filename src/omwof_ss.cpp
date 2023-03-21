@@ -51,10 +51,20 @@ Adafruit_seesaw::Adafruit_seesaw()
 
 Adafruit_seesaw::Adafruit_seesaw(I2C_HandleTypeDef *hI2c)
 {
+  uint16_t pid;
+  uint8_t year;
+  uint8_t mon;
+  uint8_t day;
+
   DBG_PRINTF_TRACE("seesaw constructor");
+ 
+
   if (this->set_I2C(hI2c))
   {
     this->i2c_address_local = this->I2C_bus_scan();
+    this->getProdDatecode(&pid, &year, &mon, &day);
+    DBG_PRINTF_TRACE("pid - %d , year %d , month %d, day %d", pid, year, mon, day);
+    
   }
   else
   {
@@ -343,14 +353,13 @@ uint16_t Adafruit_seesaw::analogRead(uint8_t pin)
  ****************************************************************************/
 uint16_t Adafruit_seesaw::touchRead(uint8_t pin)
 {
-  uint8_t buf[2] = {0,0};
+  uint8_t buf[2] = {0, 0};
   uint8_t p = pin;
 
-this->read(SEESAW_TOUCH_BASE, SEESAW_TOUCH_CHANNEL_OFFSET + p, &buf[0], 2,1000);
-  
-uint16_t ret = buf[0]<<8|buf[1];
-return ret;
-  
+  this->read(SEESAW_TOUCH_BASE, SEESAW_TOUCH_CHANNEL_OFFSET + p, &buf[0], 2, 1000);
+
+  uint16_t ret = buf[0] << 8 | buf[1];
+  return ret;
 }
 
 /*!
@@ -886,10 +895,8 @@ bool Adafruit_seesaw::write(uint8_t regHigh, uint8_t regLow,
                             uint8_t *buf = NULL, uint16_t num = 0)
 {
 
-
   uint8_t ret = I2Cdev_writeBytes(this->i2c_address_local, regHigh, regLow, num, buf);
-  DBG_PRINTF_TRACE("address - %d reg-high %d reg_low %d length %d return %d",this->i2c_address_local, regHigh, regLow, num,ret);
-  
+  DBG_PRINTF_TRACE("address - %d reg-high %d reg_low %d length %d return %d", this->i2c_address_local, regHigh, regLow, num, ret);
 
   return true;
 }
@@ -940,8 +947,6 @@ size_t Adafruit_seesaw::write(const char *str)
   this->write(SEESAW_SERCOM0_BASE, SEESAW_SERCOM_DATA, buf, len);
   return len;
 }
-
-
 
 bool Adafruit_seesaw::parse_HAL_StatusTypeDef(HAL_StatusTypeDef h)
 {

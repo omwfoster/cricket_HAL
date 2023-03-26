@@ -51,7 +51,7 @@ uint8_t i2c_transmit(uint8_t dev_addr, uint8_t *data, uint8_t len, bool pending)
 
 uint8_t i2c_receive(uint8_t dev_addr, uint8_t *data, uint8_t len, bool pending)
 {
-	return HAL_I2C_Master_Receive(&hi2c1, ((uint16_t)((dev_addr << 0)|0x0) ), data, len, 50);
+	return HAL_I2C_Master_Receive(&hi2c1, ((uint16_t)((dev_addr << 1)|0x0) ), data, len, 50);
 
 }
 

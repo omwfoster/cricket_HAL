@@ -51,8 +51,6 @@ seesaw_NeoPixel::seesaw_NeoPixel(I2C_HandleTypeDef *x, uint16_t numled, uint8_t 
     : Adafruit_seesaw(x), is800KHz(true),
       begun(false), numBytes(0), pin(-1), brightness(0)
 {
-
-  
   this->updateLength(numled);
   this->pin = pin;
   DBG_PRINTF_TRACE("set pin - %d", this->pin);

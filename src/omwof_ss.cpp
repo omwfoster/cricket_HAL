@@ -55,6 +55,7 @@ Adafruit_seesaw::Adafruit_seesaw(I2C_HandleTypeDef *hI2c)
   uint8_t year;
   uint8_t mon;
   uint8_t day;
+  
 
   DBG_PRINTF_TRACE("seesaw constructor");
  
@@ -105,16 +106,20 @@ bool Adafruit_seesaw::set_I2C(I2C_HandleTypeDef *hI2c)
 bool Adafruit_seesaw::begin(uint8_t addr, int8_t flow, bool reset)
 {
 
-  if (HAL_I2C_IsDeviceReady(this->hi2c, (uint16_t)(addr << 1), 10, 0))
-  {
-    DBG_PRINTF_TRACE("seesaw::begin");
+  HAL_StatusTypeDef h = HAL_I2C_IsDeviceReady(this->hi2c, (uint16_t)(addr << 1), 10, 0);
 
-    return true;
+  if (h == HAL_OK)
+  {
+    DBG_PRINTF_TRACE("seesaw::badness");
+
+    return false;
   }
   else
   {
     DBG_PRINTF_TRACE("i2c not ready(begin)");
-    return false;
+    this->parse_HAL_StatusTypeDef(h);
+    this->parse_HAL_I2C_StateTypeDef(this->hi2c->State);
+    return true;
   }
 }
 
@@ -157,6 +162,7 @@ uint32_t Adafruit_seesaw::getOptions()
 uint32_t Adafruit_seesaw::getVersion()
 {
   uint8_t buf[4];
+  
   this->read(SEESAW_STATUS_BASE, SEESAW_STATUS_VERSION, buf, 4);
   uint32_t ret = ((uint32_t)buf[0] << 24) | ((uint32_t)buf[1] << 16) |
                  ((uint32_t)buf[2] << 8) | (uint32_t)buf[3];
@@ -872,9 +878,10 @@ bool Adafruit_seesaw::read(uint8_t regHigh, uint8_t regLow, uint8_t *buf,
   if (I2Cdev_readBytes(this->i2c_address_local, regHigh, regLow, num, buf) == 0)
   {
     DBG_PRINTF_DEBUG("reading %d bytes - val %d", num, *buf);
+    return true;
   }
 
-  return true;
+  return false;
 }
 
 /*!

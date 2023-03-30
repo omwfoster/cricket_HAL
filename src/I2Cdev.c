@@ -39,20 +39,27 @@ THE SOFTWARE.
 
 extern I2C_HandleTypeDef hi2c1;
 
-uint8_t output_buffer[256];
+uint8_t write_buffer[256];
 uint8_t read_buffer[256];
 
 // i2c entry point
 
-uint8_t i2c_transmit(uint8_t dev_addr, uint8_t *data, uint8_t len, bool pending)
+uint8_t i2c_transmit(uint8_t dev_addr, uint8_t *data_out, uint8_t len, bool pending)
 {
-	return HAL_I2C_Master_Transmit(&hi2c1, ((uint16_t)((dev_addr << 1)|0x1) ), data, len, 50); // TODO :this is where it hangs
+	return HAL_I2C_Master_Transmit(&hi2c1, ((uint16_t)(dev_addr << 1)), data_out, len, 50); // TODO :this is where it hangs
 }
 
-uint8_t i2c_receive(uint8_t dev_addr, uint8_t *data, uint8_t len, bool pending)
+bool i2c_flush()
 {
-	return HAL_I2C_Master_Receive(&hi2c1, ((uint16_t)((dev_addr << 1)|0x0) ), data, len, 50);
+	memset(write_buffer, 0, 256);
+	memset(read_buffer, 0, 256);
 
+	return true;
+}
+
+uint8_t i2c_receive(uint8_t dev_addr, uint8_t *data_in, uint8_t len, bool pending)
+{
+	return HAL_I2C_Master_Receive(&hi2c1, ((uint16_t)(dev_addr << 1)), data_in, len, 50);
 }
 
 #define i2c_transmit_ack(dev_addr, data, len) i2c_transmit(dev_addr, data, len, true)
@@ -71,15 +78,13 @@ uint8_t i2c_receive(uint8_t dev_addr, uint8_t *data, uint8_t len, bool pending)
 int8_t I2Cdev_readBytes(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8_t len, uint8_t *data)
 {
 	int8_t err = 0;
-	uint8_t reg_data[2] = {reg_high, reg_low};
-
-	err = i2c_transmit_ack(dev_addr, reg_data, 2);
-
-	
+	write_buffer[0] = reg_high;
+	write_buffer[1] = reg_low;
+	err = i2c_transmit_ack(dev_addr, write_buffer, 2);
 
 	HAL_Delay(50);
 
-	err = i2c_receive_nack(dev_addr, data, len);
+	err = i2c_receive_nack(dev_addr, read_buffer, len);
 
 	HAL_Delay(50);
 
@@ -238,21 +243,19 @@ int8_t I2Cdev_readBitsW(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uin
  */
 int8_t I2Cdev_writeBytes(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8_t len, uint8_t *data)
 {
-	
 
-	output_buffer[0] = reg_high;
-	output_buffer[1] = reg_low;
+	write_buffer[0] = reg_high;
+	write_buffer[1] = reg_low;
 
 	for (uint8_t i = 0; i < len; i++)
 	{
-		output_buffer[i + 2] = *data;
+		write_buffer[i + 2] = *data;
 		data++;
 	}
 
 	DBG_PRINTF_TRACE("pre -  transmit");
 
-	return	i2c_transmit_nack(dev_addr, output_buffer, len + 2);
-
+	return i2c_transmit_nack(dev_addr, write_buffer, len + 2);
 }
 
 /** Write single byte to an 8-bit device register.
@@ -276,12 +279,12 @@ int8_t I2Cdev_writeByte(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uin
 int8_t I2Cdev_writeWord(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint16_t data)
 {
 
-	output_buffer[0] = reg_high;
-	output_buffer[1] = reg_low;
-	output_buffer[2] = (data >> 8) & 0xFF;
-	output_buffer[3] = data & 0xFF;
+	write_buffer[0] = reg_high;
+	write_buffer[1] = reg_low;
+	write_buffer[2] = (data >> 8);
+	write_buffer[3] = (uint8_t)data;
 
-	return i2c_transmit_nack(dev_addr, output_buffer, 4);
+	return i2c_transmit_nack(dev_addr, write_buffer, 4);
 }
 
 /** Write multiple words to a 16-bit device register.

@@ -33,6 +33,7 @@ THE SOFTWARE.
 #define SRC_I2CDEVLIB_I2CDEV_H_
 
 #include <stm32f4xx.h>
+#include <stdbool.h>
 
 #define I2CDev_Driver	Driver_I2C2
 
@@ -55,5 +56,6 @@ int8_t 	I2Cdev_writeWord(uint8_t devAddr, uint8_t reg_high, uint8_t reg_low, uin
 int8_t 	I2Cdev_writeBytes(uint8_t devAddr, uint8_t reg_high, uint8_t reg_low, uint8_t length, uint8_t *data);
 int8_t 	I2Cdev_writeWords(uint8_t devAddr, uint8_t reg_high, uint8_t reg_low, uint8_t length, uint16_t *data);
 
+bool i2c_flush();
 
 #endif /* SRC_I2CDEVLIB_I2CDEV_H_ */

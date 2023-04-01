@@ -875,7 +875,7 @@ bool Adafruit_seesaw::read(uint8_t regHigh, uint8_t regLow, uint8_t *buf,
                            uint16_t num, uint16_t delay)
 {
 
-  if (I2Cdev_readBytes(this->i2c_address_local, regHigh, regLow, num, *buf) == 0x00U)
+  if (I2Cdev_readBytes(this->i2c_address_local, regHigh, regLow, num) == 0x00U)
   {
     DBG_PRINTF_DEBUG("reading %d bytes - val %d", num, *buf);
     return true;

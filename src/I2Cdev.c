@@ -97,9 +97,9 @@ int8_t I2Cdev_readBytes(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uin
  * @param data 		Buffer to save data into
  * @return Status of read operation (0 = success, <0 = error)
  */
-int8_t I2Cdev_readByte(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8_t *data)
+int8_t I2Cdev_readByte(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low)
 {
-	return I2Cdev_readBytes(dev_addr, reg_high, reg_low, 1, data);
+	return I2Cdev_readBytes(dev_addr, reg_high, reg_low, 1, read_buffer);
 }
 
 /** Read a several 16-bit words from a 16-bit device register.
@@ -161,7 +161,7 @@ int8_t I2Cdev_readBit(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8
 {
 	int8_t err;
 
-	err = I2Cdev_readByte(dev_addr, reg_high, reg_low, data);
+	err = I2Cdev_readByte(dev_addr, reg_high, reg_low);
 	*data = (*data >> bitn) & 0x01;
 
 	return err;
@@ -181,12 +181,12 @@ int8_t I2Cdev_readBits(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint
 	int8_t err;
 
 	uint8_t b;
-	if ((err = I2Cdev_readByte(dev_addr, reg_high, reg_low, &b)) == 0)
+	if ((err = I2Cdev_readByte(dev_addr, reg_high, reg_low)) == 0)
 	{
 		uint8_t mask = ((1 << len) - 1) << (start_bit - len + 1);
-		b &= mask;
-		b >>= (start_bit - len + 1);
-		*data = b;
+		read_buffer[0] &= mask;
+		read_buffer[0] >>= (start_bit - len + 1);
+		*data = read_buffer[0];
 	}
 
 	return err;
@@ -241,7 +241,7 @@ int8_t I2Cdev_readBitsW(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uin
  * @param data 		Buffer to copy new data from
  * @return Status of operation (0 = success, <0 = error)
  */
-int8_t I2Cdev_writeBytes(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8_t len, uint8_t *data)
+int8_t I2Cdev_writeBytes(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8_t len)
 {
 
 	write_buffer[0] = reg_high;
@@ -264,10 +264,10 @@ int8_t I2Cdev_writeBytes(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, ui
  * @param data 		New byte value to write
  * @return Status of operation (0 = success, <0 = error)
  */
-int8_t I2Cdev_writeByte(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint8_t data)
+int8_t I2Cdev_writeByte(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low)
 {
 
-	return I2Cdev_writeBytes(dev_addr, reg_high, reg_low, 1, &data);
+	return I2Cdev_writeBytes(dev_addr, reg_high, reg_low, 1);
 }
 
 /** Write single 16-bit word to an 16-bit device register.
@@ -326,15 +326,15 @@ int8_t I2Cdev_writeBit(uint8_t dev_addr, uint8_t reg_high, uint8_t reg_low, uint
 	uint8_t b;
 	int8_t err;
 
-	err = I2Cdev_readByte(dev_addr, reg_high, reg_low, &b);
+	err = I2Cdev_readByte(dev_addr, reg_high, reg_low);
 	if (err < 0)
 	{
 		return err;
 	}
 
-	b = (data != 0) ? (b | (1 << bit_n)) : (b &= ~(1 << bit_n));
+	write_buffer[0] = (data != 0) ? (write_buffer[0] | (1 << bit_n)) : (write_buffer[0] &= ~(1 << bit_n));
 
-	return I2Cdev_writeByte(dev_addr, reg_high, reg_low, b);
+	return I2Cdev_writeByte(dev_addr, reg_high, reg_low);
 }
 
 /** write a single bit in a 16-bit device register.

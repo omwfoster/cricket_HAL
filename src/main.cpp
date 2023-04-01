@@ -66,7 +66,7 @@ seesaw_NeoPixel *neopix1;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 void init_I2C1(void);
-
+uint8_t I2C_bus_scan(I2C_HandleTypeDef *);
 //
 /* USER CODE BEGIN PFP */
 

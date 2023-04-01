@@ -59,7 +59,7 @@ Adafruit_seesaw::Adafruit_seesaw(I2C_HandleTypeDef *hI2c)
 
   DBG_PRINTF_TRACE("seesaw constructor");
  
-  
+
   if (this->set_I2C(hI2c))
   {
     this->i2c_address_local = this->I2C_bus_scan();
@@ -362,7 +362,7 @@ uint16_t Adafruit_seesaw::touchRead(uint8_t pin)
   uint8_t buf[2] = {0, 0};
   uint8_t p = pin;
 
-  this->read(SEESAW_TOUCH_BASE, SEESAW_TOUCH_CHANNEL_OFFSET, &buf[0], 2, 1000);
+  this->read(SEESAW_TOUCH_BASE, SEESAW_TOUCH_CHANNEL_OFFSET + p, &buf[0], 2, 1000);
 
   uint16_t ret = buf[0] << 8 | buf[1];
   return ret;
@@ -875,7 +875,7 @@ bool Adafruit_seesaw::read(uint8_t regHigh, uint8_t regLow, uint8_t *buf,
                            uint16_t num, uint16_t delay)
 {
 
-  if (I2Cdev_readBytes(this->i2c_address_local, regHigh, regLow, num) == 0x00U)
+  if (I2Cdev_readBytes(this->i2c_address_local, regHigh, regLow, num, *buf) == 0x00U)
   {
     DBG_PRINTF_DEBUG("reading %d bytes - val %d", num, *buf);
     return true;
